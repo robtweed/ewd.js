@@ -1,22 +1,25 @@
-var ewd = require('ewdgateway2');
+/*
+Example EWD.js Startup file for use with GlobalsDB on Windows
+
+Notes:
+
+1) Change the database.path value as appropriate for your Cache installation.
+
+2) IMPORTANT!: The cache.node interface module file MUST exist in the primary node_modules directory
+of your EWD.js configuration
+
+*/
+
+var ewd = require('ewdjs');
 
 var params = {
       poolSize: 2,
       httpPort: 8080,
-      https: {
-        enabled: true,
-        keyPath: "c:\\node\\ssl\\ssl.key",
-        certificatePath: "c:\\node\\ssl\\ssl.crt",
-      },
       database: {
         type: 'globals',
-        nodePath: "cache",
         path:"c:\\Globals\\mgr",
       },
-      modulePath: 'c:\\node\\node_modules',
       traceLevel: 3,
-      webServerRootPath: 'c:\\node\\www',
-      logFile: 'c:\\node\\ewdLog.txt',
       management: {
         password: 'keepThisSecret!'
      }

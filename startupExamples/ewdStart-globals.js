@@ -1,5 +1,5 @@
 /*
-Example EWD.js Startup file for use with GlobalsDB
+Example EWD.js Startup file for use with GlobalsDB running on Linux or OS X
 
 Notes:
 
