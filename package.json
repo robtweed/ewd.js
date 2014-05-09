@@ -1,14 +1,14 @@
 {
   "name": "ewdjs",
   "description": "EWD.js: Node.js-based Application Framework for MongoDB, Cache, GlobalsDB and GT.M",
-  "version": "0.60.5",
+  "version": "0.60.6",
   "author": {
     "name": "Rob Tweed",
     "email": "rtweed@mgateway.com"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/robtweed/ewdjs.git"
+    "url": "git://github.com/robtweed/ewd.js.git"
   },
   "os": [
     "any"
