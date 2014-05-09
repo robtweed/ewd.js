@@ -10,7 +10,9 @@ if (!fs.existsSync(modulePath + '/www/')) {
 }
 
 var copyFilesInDirectory = function(oldPath, newPath) {
+  console.log("Move files in " + oldPath + " to " + newPath);
   var files = fs.readdirSync(oldPath);
+  if (files) console.log(files.length + ' files found');
   var file;
   var stats;
   var oldFilePath;
@@ -18,6 +20,7 @@ var copyFilesInDirectory = function(oldPath, newPath) {
   var error = false;
   for (var i = 0; i < files.length; i++) {
     file = files[i];
+    console.log('file: ' + file);
     stats = fs.lstatSync(oldPath + '/' + file);
     if (stats.isFile()) {
       oldFilePath = oldPath + '/' + file;
@@ -37,6 +40,7 @@ var copyFilesInDirectory = function(oldPath, newPath) {
 
 
 var moveDirectory = function(oldPath, newPath) {
+  console.log("Move Directory from " + oldPath + " to " + newPath);
   var error = false;
   if (fs.existsSync(oldPath)) {
     if (!fs.existsSync(newPath)) {
@@ -96,7 +100,7 @@ var installEWD = function(path) {
     return;
   }
 
-  oldPath = modulePath + '/node_modules';
+  oldPath = modulePath + '/modules';
   newPath = path + '/node_modules';
   installErrors = copyFilesInDirectory(oldPath, newPath);
 

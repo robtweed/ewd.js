@@ -16,8 +16,9 @@ Google Group for discussions, support, advice etc: [http://groups.google.co.uk/g
 
 In the node_modules/ewdjs directory that is created, you'll find a file named install.js.  It is 
 recommended that you run this in order to create the run-time environment and to move the files in
-the repository to their correct run-time destinations.  From within node_modules/ewdjs, run the following:
+the repository to their correct run-time destinations.  So run the following:
 
+       cd node_modules/ewdjs
        node install
 
 	   
