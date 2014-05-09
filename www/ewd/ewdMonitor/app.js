@@ -260,7 +260,7 @@ EWD.application = {
             }
             path.reverse();
             path[path.length - 1] = text;
-            console.log(JSON.stringify(path));
+            //console.log(JSON.stringify(path));
             EWD.application.tree.node = $(e.target).parents('.tree-folder:first');
             EWD.application.tree.confirmDelete(path, 'folder');
           });
@@ -296,7 +296,7 @@ EWD.application = {
             //var parNode = $(this).parents('.tree-item:first').parent(); 
             //path.push($(parNode).find('.tree-folder-name:first').text().trim());
             path.push(nodeSubscript);
-            console.log(JSON.stringify(path));
+            //console.log(JSON.stringify(path));
             EWD.application.tree.node = $(this).parents('.tree-item:first');
             EWD.application.tree.confirmDelete(path, 'item');
           });
@@ -729,9 +729,9 @@ EWD.application = {
 
         deleteApp: function() {
           var outer = $(this).parent().parent();
-          console.log('deleteApp: outer.id = ' + outer.id);
+          //console.log('deleteApp: outer.id = ' + outer.id);
           var Id = "edit_appNameInput";
-          console.log('no of apps: ' + EWD.application.wsMgr.appCount);
+          //console.log('no of apps: ' + EWD.application.wsMgr.appCount);
           if (EWD.application.wsMgr.appCount > 1) {
             $(this).parent().remove();
             EWD.application.wsMgr.appCount--;
@@ -756,8 +756,8 @@ EWD.application = {
           }
           var outer = $("edit_appInputs");
           for (var i = 1; i < outer.children().length; i++) {
-            console.log("running for");
-            console.log(delID);
+            //console.log("running for");
+            //console.log(delID);
             outer.children()[i].children[0].id = ID + (i - 1);
             outer.children()[i].children[0].placeholder = "Application Name " + i;
           }   
@@ -789,6 +789,7 @@ EWD.application = {
             $("#edit_secretKeyInput").val('');
             $("#wsMgr_extraApps").html('');
             $("#edit_appNameInput0").val('');
+            EWD.application.wsMgr.appCount = 1;
           }
         },
         newApphtml: "<div class='input-group'>                                             \
@@ -941,7 +942,7 @@ EWD.application = {
 
       $("#wsMgr_SaveBtn").on('click', function(eventObj) {
         var validate = function(id, key, app) {
-          console.log('validate: ' + id + '; ' + key + '; ' + app);
+          //console.log('validate: ' + id + '; ' + key + '; ' + app);
           if (id === "" || id === " ") { 
             return [false, "Access Id must not be empty"];
           }
@@ -979,7 +980,7 @@ EWD.application = {
         var keyInputId = "#edit_secretKeyInput";
         var appInputId = "#edit_appInputs";
         var count = EWD.application.wsMgr.appCount;
-        console.log(idInputId + " " + keyInputId + " " + appInputId);
+        //console.log(idInputId + " " + keyInputId + " " + appInputId);
         var id = $(idInputId).val();
         if (EWD.application.wsMgr.mode === 'add' && id && id !== '' && EWD.application.wsMgr.users[id]) {
           toastr.clear();
@@ -991,11 +992,11 @@ EWD.application = {
         var appNames = [];
         var appName = "";
         for (var app = 1; app < (count+1); app++) {
-          console.log(app);
+          //console.log(app);
           appName = $(appInputId).children()[app].children[0].value;
           if (appName !== '') appNames.push(appName);
         }
-        console.log("appNames = " + JSON.stringify(appNames));
+        //console.log("appNames = " + JSON.stringify(appNames));
         var isValid = validate(id, key, appNames);
         if (isValid[0]) {
           doSave(id, key, appNames, EWD.application.wsMgr.mode);

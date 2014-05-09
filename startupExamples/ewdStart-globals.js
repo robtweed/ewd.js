@@ -26,10 +26,7 @@ params = {
   },
   management: {
     password: 'keepThisSecret!'
-  },
-  webSockets: {
-    externalListenerPort: 10000
-  },
+  }
 };
 
 ewd.start(params);
