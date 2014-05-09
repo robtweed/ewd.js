@@ -23,8 +23,8 @@ the repository to their correct run-time destinations.  From within node_modules
 	   
 ##Documentation
 
-For full information on EWD.js and how to install, configure and use the
-ewdgateway2 module, see: [http://gradvs1.mgateway.com/download/EWDjs.pdf]
+For full information on EWD.js and how to install, configure and use it, 
+see: [http://gradvs1.mgateway.com/download/EWDjs.pdf]
 (http://gradvs1.mgateway.com/download/EWDjs.pdf)
 
 
