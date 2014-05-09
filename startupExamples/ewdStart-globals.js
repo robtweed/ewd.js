@@ -1,25 +1,19 @@
-var ewd = require('ewdgateway2');
+var ewd = require('ewdjs');
 
-var params = {
-  poolSize: 2,
+params = {
+  cwd: '/opt/ewdlite/',
   httpPort: 8080,
-  https: {
-    enabled: true,
-    keyPath: "ssl/ssl.key",
-    certificatePath: "ssl/ssl.crt",
-  },
+  traceLevel: 3,
   database: {
     type: 'globals',
-    nodePath: "cache",
-    path:"~/globalsdb/mgr",
+    path:"/opt/globalsdb/mgr"
   },
-  modulePath: '~/globalsdb/node_modules',
-  traceLevel: 3,
-  webServerRootPath: 'www',
-  logFile: 'ewdLog.txt',
   management: {
     password: 'keepThisSecret!'
- }
+  },
+  webSockets: {
+    externalListenerPort: 10000
+  },
 };
 
 ewd.start(params);
