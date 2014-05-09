@@ -12,16 +12,16 @@ Google Group for discussions, support, advice etc: [http://groups.google.co.uk/g
 
 ## Installing EWD.js
 
-Create a directory for your EWD.js environment, eg ~/ewdjs
+Create a directory for your EWD.js environment, eg *~/ewdjs*
 
 Then, assuming you've already installed Node.js:
 
        cd ~/ewdjs
        npm install ewdjs
 
-Modify that first cd command as appropriate for your system.
+Modify that first *cd* command as appropriate for your system.
 
-In the node_modules/ewdjs directory that is created, you'll find a file named install.js.  It is 
+In the *node_modules/ewdjs* directory that has now been created, you'll find a file named *install.js*.  It is 
 recommended that you run this in order to create the run-time environment and to move the files in
 the repository to their correct run-time destinations.  So run the following:
 
@@ -38,7 +38,7 @@ for use with the GT.M database (which runs on Linux):
       cd ~/ewdjs
       node ewdStart-gtm
 
-Again, modify that first cd command as appropriate for your system.
+Again, modify that first *cd* command as appropriate for your system.
 
 You may need to edit the startup file to specify a different webServer port, external listener port,
 child processes pool size, custom directories etc.
