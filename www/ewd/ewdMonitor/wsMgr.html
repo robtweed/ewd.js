@@ -1,0 +1,107 @@
+<div class="row" id="wsMgrPageLoaded">
+  <div class="col-md-12">
+    <h1>Web Service Security Management</h1>
+
+    <div id="manageUsersPanel" class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title" id="wsMgr-title">Manage Registered Users</h3>
+      </div>
+      <div class="panel-body">
+
+        <div class="row">   
+          <div class="col-xs-12">
+            <div class="btn-group">
+              <button id="wsMgr_EditBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-folder-open"></span> Edit Selected
+              </button>
+              <button id="wsMgr_DeleteBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-floppy-remove"></span> Delete Selected
+              </button>
+              <button id="wsMgr_AddBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-plus"></span> Add
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <br />
+
+        <div class="row"> 
+          <div class="col-xs-4">
+            <ul class="list-group" id="accessIdList">
+              <li class="list-group-item" id="accessIdListHeader">
+                <h4 class="list-group-item-heading">Access ID</h4>
+              </li>
+            </ul>
+          </div>
+          <div class="col-xs-4">
+            <ul class="list-group" id="secretKeyList">
+              <li class="list-group-item" id="secretKeyListHeader">
+                <h4 class="list-group-item-heading">Secret Key</h4>
+              </li>
+            </ul>
+          </div>
+          <div class="col-xs-4">
+            <ul class="list-group" id="appList">
+              <li class="list-group-item" id="appListHeader">
+                <h4 class="list-group-item-heading">Applications</h4>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="editUsersPanel" class="panel panel-primary collapse">
+      <div class="panel-heading">
+        <h3 class="panel-title" id="wsMgrEdit-title">Edit Registered User</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="btn-group">
+              <button id="wsMgr_back" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-arrow-left"></span> Back
+              </button>
+              <button id="wsMgr_extraApp" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-plus"></span> Add Extra Application
+              </button>
+              <button id="wsMgr_SaveBtn" type="button" class="btn btn-default">
+               <span class="glyphicon glyphicon-floppy-disk"></span> Save
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <br />
+                        
+        <div class="row"> 
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="edit_accessIdInputLabel">Access ID</label>
+              <input type="text" class="form-control" id="edit_accessIdInput" placeholder="Access ID" />
+            </div>
+            <div class="form-group">
+              <label for="accessIdInputLabel">Secret Key</label>
+              <input type="text" class="form-control" id="edit_secretKeyInput" placeholder="Secret Key" />
+            </div>
+            <div class="form-group" id="edit_appInputs">
+              <label for="accessIdInputLabel">Applications</label>
+              <div class="input-group" id="edit_appInputList">
+                <input type="text" class="form-control" id="edit_appNameInput0" placeholder="Application Name 1 /">
+                <span class="input-group-btn" id="del_edit_appNameInput0">
+                  <button class="btn btn-default">
+                    <span class="glyphicon glyphicon-remove"></span>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

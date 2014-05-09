@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="author" content="Rob Tweed">
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css" rel="stylesheet" />
+    <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.min.css" rel="stylesheet" />
+    <link href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+    <link href="//www.fuelcdn.com/fuelux/2.4.1/css/fuelux.css" rel="stylesheet" />
+    <link href="//www.fuelcdn.com/fuelux/2.4.1/css/fuelux-responsive.css" rel="stylesheet" />
+
+<!--
+    <link href="bp.css" rel="stylesheet" />
+    <link href="examples.css" rel="stylesheet" />
+-->
+
+    <!-- Fav and touch icons -->
+    <link rel="shortcut icon" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/favicon.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-144-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-114-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-72-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-57-precomposed.png" />
+
+    <script src="/socket.io/socket.io.js"></script>
+    <!--[if (IE 6)|(IE 7)|(IE 8)]><script type="text/javascript" src="//ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script><![endif]-->
+
+    <title id="ewd-title"></title>
+
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      .sidebar-nav {
+        padding: 9px 0;
+      }
+      .console {
+        height: 500px;
+        overflow: auto;
+      }
+      .graph-Container {
+        box-sizing: border-box;
+        width: 850px;
+        height: 460px;
+        padding: 20px 15px 15px 15px;
+        margin: 15px auto 30px auto;
+        border: 1px solid #ddd;
+        background: #fff;
+        background: linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -o-linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -ms-linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -moz-linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -webkit-linear-gradient(#f6f6f6 0, #fff 50px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        -o-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        -ms-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        -moz-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        -webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      }
+      .graph-Placeholder {
+        width: 820px;
+        height: 420px;
+        font-size: 14px;
+        line-height: 1.2em;
+      }
+      .ui-widget-content .ui-state-default { 
+        background: blue; 
+      }
+      .fuelux .tree {
+        overflow-x: scroll;
+      }
+
+    </style>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+  </head>
+
+  <body>
+
+    <!-- Modal Login Form -->
+
+    <div id="loginPanel" class="modal fade">
+      <div class="modal-dialog">
+        <div id="loginModalPanel" class="modal-content">
+          <div class="modal-header">
+            <h3 id="ewd-loginPanel-title"></h3>
+          </div>
+          <div id="loginPanelBody" class="modal-body">
+            <legend>Authentication</legend>
+            <div class="form-group">
+              <label for="password">EWD.js Management Password: &nbsp;</label>
+              <input type="password" class="form-control" id="username" placeholder="Enter password" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="#" id="loginBtn" style="display: none" class="btn btn-primary">Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Page Definition -->
+
+    <!-- NavBar header -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+              <div class="navbar-header">
+                <div class="navbar-brand visible-xs" id="ewd-navbar-title-phone"></div>
+                <div class="navbar-brand hidden-xs" id="ewd-navbar-title-other"></div>
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+              </div>
+              <div class="navbar-collapse collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav pull-right" id="navList">
+                  <li id="overview_Nav" data-header="overview"><a href="#">Overview</a></li>
+                  <li id="console_Nav" data-header="console"><a href="#">Console</a></li>
+                  <li id="memory_Nav" data-header="memory"><a href="#">Memory</a></li>
+                  <li id="internals_Nav" data-header="internals"><a href="#">Internals</a></li>
+                  <li id="sessions_Nav" data-header="sessions"><a href="#">Sessions</a></li>
+                  <li id="db_Nav" data-header="db"><a href="#">Database</a></li>
+                  <li id="importer_Nav" data-header="import"><a href="#">Import</a></li>
+                  <li id="wsMgr_Nav" data-header="wsMgr"><a href="#">Security</a></li>
+                  <li id="about_Nav" data-header="about"><a href="#">About</a></li>
+                  <li id="logout_Nav" data-header="logout"><a href="#">Logout</a></li>
+                </ul>
+              </div>
+            </div>
+    </nav>
+
+    <!-- main menu -->
+    <ul class="nav nav-pills nav-stacked collapse" id="ewd-mainMenu">
+        <li class="nav-header disabled"><a id="ewd-menu-title"></a></li>
+    </ul>
+
+    <!-- Main body -->
+    <div id="content">
+
+      <!-- Overview CONTAINER -->
+      <div id="overview_Container" class="container in" style="display: none">
+        <div class="row">
+          <div class="col-md-12">
+            <h1>EWD.js System Overview</h1>
+            <div class="panel">
+              <div class="panel-body">
+                <div class="col-md-4">
+                  <div class="infoPanel table-responsive">
+                    <h2 class="infoHeader">Build Details</h2>
+                    <div>
+                      <table id="buildDetails" class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>Module</th>
+                            <th>Version/build</th>
+                          </tr>
+                        </thead>
+                        <tbody id="buildDetailsTableBody">
+                          <tr>
+                            <td>Node.js</td>
+                            <td id="buildVersion-Node"></td>
+                          </tr>
+                          <tr>
+                            <td>ewd.js</td>
+                            <td id="buildVersion-ewdgateway2"></td>
+                          </tr>
+                          <tr>
+                            <td>Database Interface</td>
+                            <td id="buildVersion-iface"></td>
+                          </tr>
+                          <tr>
+                            <td>Database</td>
+                            <td id="buildVersion-db"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="infoPanel table-responsive">
+                    <h2 class="infoHeader">Master Process</h2>
+                    <div>
+                      <table id="mainProcess" class="table table-striped">
+                        <tbody>
+                          <tr>
+                            <td id="mainProcess-pid"></td>
+                            <td id="mainProcess-btn">
+                              <button class="btn btn-danger pull-right" type="button" id="stopBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Shutdown EWD.js">
+                                <span class="glyphicon glyphicon-remove"></span>
+                               </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div>
+                      <table id="startedInfo" class="table table-striped">
+                        <tbody id="startedInfoTableBody">
+                          <tr>
+                            <td>Started</td>
+                            <td id="startedDate"></td>
+                          </tr>
+                          <tr>
+                            <td>Up Time</td>
+                            <td id="uptime"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div>
+                      <table id="masterProcess" class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>Queue Length</th>
+                            <th>Maximum</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td id="masterProcess-qLength"></td>
+                            <td id="masterProcess-max"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="infoPanel table-responsive">
+                    <h2 class="infoHeader">Child Process Pool</h2>
+                    <div>
+                      <table id="childProcessTable" class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>PID</th>
+                            <th>Requests</th>
+                            <th>Available</th>
+                            <th>
+                              <button class="btn btn-success pull-right" type="button" id="cpStartBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start a new Child Process">
+                                <span class="glyphicon glyphicon-off"></span>
+                               </button>
+
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+
+        </div>
+      </div>
+
+      <!-- console CONTAINER -->
+      <div id="console_Container" class="container collapse">
+        <div class="row">
+          <div class="col-md-4">
+              <h1>Console</h1>
+          </div>
+          <div class="col-md-8">
+            <br />
+            Reconfigure Monitoring 
+            <button type="button" class="btn btn-primary" id="monitoringLevelBtn">Level</button>
+            &nbsp;
+            <button type="button" class="btn btn-primary" id="monitoringDestBtn">Destination</button>
+
+
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel">
+              <div class="panel-body">
+                <div class="console" id="consoleText">
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- memory CONTAINER -->
+      <div id="memory_Container" class="container collapse"></div>
+
+      <!-- sessions CONTAINER -->
+      <div id="sessions_Container" class="container collapse"></div>
+
+      <!-- internals CONTAINER -->
+      <div id="internals_Container" class="container collapse"></div>
+
+      <!-- DataBase (db) CONTAINER -->
+      <div id="db_Container" class="container collapse"></div>
+
+      <!-- import CONTAINER -->
+      <div id="importer_Container" class="container collapse"></div>
+
+      <!-- wsMgr CONTAINER -->
+      <div id="wsMgr_Container" class="container collapse"></div>
+
+      <!-- about CONTAINER -->
+      <div id="about_Container" class="container collapse"></div>
+
+      <!-- logout CONTAINER -->
+      <div id="logout_Container" class="container collapse"></div>
+
+    </div>
+
+    <!-- Modal info panel -->
+    <div class="modal fade" id="InfoPanel" >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a class="close" data-dismiss="modal">X</a>
+                    <h3 id="InfoPanelTitle">Title</h3>
+                </div>
+                <div class="modal-body">
+                    <h4 id="InfoPanelHeading">
+                        Heading
+                    </h4>
+                    <p id="InfoPanelText">
+                        text
+                    </p>
+                </div>
+                <div class="modal-footer" id="InfoPanelFooter">
+                    <button class="btn btn-success" id="InfoPanelCloseBtn">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmPanel" class="modal fade">    
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <a class="close" data-dismiss="modal">&times;</a>
+            <h3 id="confirmPanelHeading">Confirm Panel</h3>
+          </div>
+          <div class="modal-body">
+            <p id="confirmPanelQuestion">OK?</p>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn" data-dismiss="modal" id="confirmPanelCancelBtn">Cancel</a>
+            <button class="btn btn-primary" id="confirmPanelOKBtn">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+     ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
+    <script src="//www.fuelcdn.com/fuelux/2.4.1/loader.js" type="text/javascript"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.min.js"></script>
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/excanvas.min.js"></script><![endif]-->
+    <script language="javascript" type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
+    <script src="/ewdLite/EWD.js"></script>
+    <script type="text/javascript" src="/ewdLite/ewdBootstrap3.js"></script>
+    
+    <script type="text/javascript" src="app.js"></script>
+
+    <!--  =======================================  -->
+    
+    
+  </body>
+</html>

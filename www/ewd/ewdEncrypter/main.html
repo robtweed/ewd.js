@@ -1,0 +1,30 @@
+<div class="row" id="mainPageLoaded"> 
+  <div class="col-md-12">
+    <h1>Encrypt Access Code & Verify Code</h1>
+    <form id="encryptForm" role="form">
+      <legend>Enter Credentials</legend>
+      <div class="form-group">
+        <label for="accessCode">Access Code: </label>
+        <input type="text" class="form-control focusedInput" id="accessCode" placeholder="Enter an Access Code" />
+      </div>
+      <div class="form-group">
+        <label for="verifyCode">Verify Code: &nbsp;</label>
+        <input type="text" class="form-control" id="verifyCode" placeholder="Enter a Verify Code" />
+      </div>
+      <div class="form-group">
+        <label for="key">Encryption key: &nbsp;</label>
+        <input type="text" class="form-control" id="key" placeholder="Enter key from initiate response" />
+      </div>
+      <div>
+        <button class="btn btn-danger pull-left" type="button" id="encryptBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Encrypt Credentials">
+          <span class="glyphicon glyphicon-eye-close"></span>
+        </button>
+      </div>
+      <br /><br />
+      <div class="form-group">
+        <label for="credentials">Encrypted credentials value: &nbsp;</label>
+        <input type="text" class="form-control" id="credentials" />
+      </div>
+    </form>
+  </div>
+</div>

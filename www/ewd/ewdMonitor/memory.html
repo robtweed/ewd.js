@@ -1,0 +1,24 @@
+<div class="row" id="memoryPageLoaded">
+  <div class="col-md-12">
+    <h1>Memory Utilisation</h1>
+    <div class="col-md-1" style="text-align: center">
+      Process:
+      <div id="memory-processes"></div>
+    </div>
+    <div class="col-md-11">
+      <div class="panel">
+        <div class="panel-body" id="memory_Panel">
+          <div class="graph-Container">
+            <div id="memoryGraph" class="graph-Placeholder"></div>
+            <span id="memory-hoverdata"></span>
+          </div>
+        </div>
+        <p>
+          <label for="graph-interval-value">Refresh Interval (sec): </label>
+          <input type="text" id="graph-interval-value" size="3">
+        </p>
+        <div id="graph-interval"></div>
+      </div>
+    </div>
+  </div>
+</div>

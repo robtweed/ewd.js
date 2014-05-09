@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="author" content="Rob Tweed" />
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.min.css" rel="stylesheet" />
+    <link href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="//oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="shortcut icon" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/favicon.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-144-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-114-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-72-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" href="//ematic-solutions.com/cdn/bootstrap/2.3.1/ico/apple-touch-icon-57-precomposed.png" />
+
+    <script src="/socket.io/socket.io.js"></script>
+    <!--[if (IE 6)|(IE 7)|(IE 8)]><script type="text/javascript" src="//ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script><![endif]-->
+
+    <title id="ewd-title"></title>
+
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      .sidebar-nav {
+        padding: 9px 0;
+      }
+      .focusedInput {
+        border-color: rgba(82,168,236,.8);
+        outline: 0;
+        outline: thin dotted \9;
+        -moz-box-shadow: 0 0 8px rgba(82,168,236,.6);
+        box-shadow: 0 0 8px rgba(82,168,236,.6) !important;
+      }
+      .graph-Container {
+        box-sizing: border-box;
+        width: 850px;
+        height: 460px;
+        padding: 20px 15px 15px 15px;
+        margin: 15px auto 30px auto;
+        border: 1px solid #ddd;
+        background: #fff;
+        background: linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -o-linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -ms-linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -moz-linear-gradient(#f6f6f6 0, #fff 50px);
+        background: -webkit-linear-gradient(#f6f6f6 0, #fff 50px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        -o-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        -ms-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        -moz-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        -webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      }
+      .graph-Placeholder {
+        width: 820px;
+        height: 420px;
+        font-size: 14px;
+        line-height: 1.2em;
+      }
+      .ui-widget-content .ui-state-default { 
+        background: blue; 
+      }
+      .fuelux .tree {
+        overflow-x: scroll;
+      }
+
+    </style>
+    
+  </head>
+
+  <body>
+
+
+    <!-- Main Page Definition -->
+
+    <!-- NavBar header -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <div class="navbar-brand visible-xs" id="ewd-navbar-title-phone"></div>
+          <div class="navbar-brand hidden-xs" id="ewd-navbar-title-other"></div>
+          <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse navbar-ex1-collapse">
+          <ul class="nav navbar-nav pull-right" id="navList"></ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main body -->
+    <div id="content">
+
+      <!-- main CONTAINER -->
+      <div id="main_Container" class="container in" style="display: none"></div>
+
+      <!-- about CONTAINER -->
+      <div id="about_Container" class="container collapse"></div>
+
+    </div>
+
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.min.js"></script>
+    <script src="/ewdjs/EWD.js"></script>
+    <script type="text/javascript" src="/ewdjs/ewdBootstrap3.js"></script>
+    
+    <script type="text/javascript" src="app.js"></script>
+    
+  </body>
+</html>
