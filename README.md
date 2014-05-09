@@ -1,23 +1,27 @@
-# ewdGateway2
+# EWD.js
  
-Node.js-based EWD Gateway for MongoDB, Cach&#233;, GlobalsDB and GT.M
+Node.js-based Application Framework for MongoDB, Cach&#233;, GlobalsDB and GT.M
 
 Rob Tweed <rtweed@mgateway.com>  
-10 January 2013, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
+9 May 2014, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
 
 Twitter: @rtweed
 
 Google Group for discussions, support, advice etc: [http://groups.google.co.uk/group/enterprise-web-developer-community](http://groups.google.co.uk/group/enterprise-web-developer-community)
 
 
-## Installing ewdGateway2
+## Installing EWD.js
 
-       npm install ewdgateway2
+       npm install ewdjs
+
+In the node_modules/ewdjs directory that is created, you'll find a file named install.js.  It is 
+recommended that you run this in order to create the run-time environment and to move the files in
+the repository to their correct run-time destinations.  From within node_modules/ewdjs, run the following:
+
+       node install
 
 	   
-##EWD.js
-
-ewdGateway2 includes an entirely WebSocket-based framework known as EWD.js.
+##Documentation
 
 For full information on EWD.js and how to install, configure and use the
 ewdgateway2 module, see: [http://gradvs1.mgateway.com/download/EWDjs.pdf]
