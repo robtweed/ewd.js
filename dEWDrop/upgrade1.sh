@@ -21,5 +21,5 @@ sudo rm -rf /usr/share/doc/npm
 sudo rm -rf /usr/bin/npm
 sudo rm -rf /var/lib/dpkg/alternatives/npm
 
-sudo chattr -i .profile
+sudo chattr -i ¬/.profile
 curl https://raw.githubusercontent.com/creationix/nvm/v0.7.0/install.sh | sh
