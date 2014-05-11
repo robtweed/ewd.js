@@ -1,29 +1,28 @@
 /*
 Example EWD.js Startup file for use with GT.M running on Linux
 
-Notes:
-
-1) The configuration/startup definition below assumes that EWD.js has been installed in 
-   ~/ewdjs
-
-2) IMPORTANT!: Nodem must have been installed using "npm install nodem" from within ~/ewdjs
-   Remember to configure Nodem properly by moving files from its repository correctly
-
 */
 
+if (process.argv[2]) var config = require(process.argv[2]);
 var ewd = require('ewdjs');
 
+var port = process.argv[3] || 8080;
+var poolsize = process.argv[4] || 2;
+var tracelevel = process.argv[5] || 3;
+var password = process.argv[6] || 'keepThisSecret!';
+
 var params = {
-      httpPort: 8080,
-      poolSize: 2,
+      httpPort: port,
+      poolSize: poolsize,
       database: {
-        type: 'gtm',
-        nodePath:"nodem",
+        type: 'gtm'
       },
-      traceLevel: 3,
+      traceLevel: tracelevel,
       management: {
-        password: 'keepThisSecret!'
+        password: password
      }
 };
 
-ewd.start(params);
+setTimeout(function() {
+  ewd.start(params);
+},1000);
