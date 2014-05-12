@@ -17,7 +17,7 @@ npm install nodem
 # Now install/configure EWD.js
 
 cd node_modules/ewdjs
-node install
+node install silent /home/vista/ewdjs
 
 # Change the Nodem mumps.node to the correct one:
 
