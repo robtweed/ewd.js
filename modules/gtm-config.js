@@ -1,4 +1,6 @@
+var spawn = require('child_process').spawn;
 var fs = require('fs');
+
 var home = process.env.HOME;
 var gtmdir = home + '/.fis-gtm';
 var gtmver = fs.readdirSync(gtmdir)[0];
@@ -6,11 +8,8 @@ var gtmroot = gtmdir + '/' + gtmver;
 var gtmdist = '/usr/lib/fis-gtm/' + gtmver;
 
 if (!fs.existsSync('/usr/local/lib/libgtmshr.so')) {
-  var contents = '#!/usr/bin/env bash\nsudo -i\ncd /usr/local/lib\nln -s ' + gtmdist + '/libgtmshr.so\nldconfig\nexit';
-  fs.writeFileSync('tmp.sh', contents, 'utf-8');
-  var ok = exec('tmp.sh', function() {
-    fs.unlinkSync('tmp.sh');
-  });
+  var ok = spawn('sudo', ['ln', '-s', gtmdist + '/libgtmshr.so', '/usr/local/lib/libgtmshr.so']);
+  ok = spawn('sudo', ['ldconfig']);
 };
 
 process.env['GTM_REPLICATION'] = 'off';
