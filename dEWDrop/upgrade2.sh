@@ -2,9 +2,7 @@
 
 source ~/.nvm/nvm.sh
 nvm install 0.10.28
-
-# Remember to edit .profile and add this line to the end:
-# nvm use 0.10.28
+echo 'nvm use 0.10.28' >> ~/.profile
 
 # Now ready to install EWD.js and Nodem:
 
