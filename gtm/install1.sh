@@ -3,6 +3,7 @@
 # Update first just to be sure
 
 sudo apt-get update
+sudo apt-get install -y openssh-server
 
 # Install GT.M
 
