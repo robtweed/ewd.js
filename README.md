@@ -45,7 +45,12 @@ child processes pool size, custom directories etc.
 
 ## Create a GT.M-based system from scratch
 
-Start up a Ubuntu 14.04 (or later) machine, Virtual Machine or EC2 instance.  Login and type:
+Instead of going through the steps above, EWD.js provides some install scripts that do all the work for you.
+One of these sets of scripts will create a complete working system that includes the GT.M database, 
+Node.js and EWD.js.  All you need is a new, empty Ubuntu 14.04 (or later) machine, virtual machine or
+EC2 instance.
+
+Start up the Ubuntu 14.04 machine.  Login and type:
 
       sudo apt-get install -y subversion
       svn export https://github.com/robtweed/ewd.js/trunk/gtm gtm
@@ -69,7 +74,7 @@ Start the new, improved EWDMonitor application using the usual URL:
 
 ## Upgrade a dEWDrop Virtual Machine
 
-To upgrade Node.js and NodeM and install EWD.js on a dEWDrop VM:
+You can automatically upgrade Node.js and NodeM and install EWD.js on a dEWDrop VM as follows:
 
       sudo apt-get install subversion
       svn export https://github.com/robtweed/ewd.js/trunk/dEWDrop dewdrop
