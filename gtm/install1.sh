@@ -11,7 +11,10 @@ sudo apt-get install -y fis-gtm
 
 # Create standard default database setup
 
-echo -e 'H\n' | /usr/lib/fis-gtm/V6.0-003_x86_64/gtm -direct
+cd /usr/lib/fis-gtm
+dirs=( $(find . -maxdepth 1 -type d -printf '%P\n') )
+cd ~
+echo -e 'H\n' | /usr/lib/fis-gtm/${dirs[0]}/gtm -direct
 
 # Install NVM (Node.js Version Manager)
 

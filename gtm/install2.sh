@@ -31,8 +31,8 @@ fi
 # Set up symbolic link to libgtmshr so that it's available for use by NodeM
 
 cd /usr/lib/fis-gtm
-gtm_dist=/usr/lib/fis-gtm/$(ls -d */)
-sudo ln -s $gtm_dist'libgtmshr.so' /usr/local/lib/libgtmshr.so
+dirs=( $(find . -maxdepth 1 -type d -printf '%P\n') )
+sudo ln -s ${dirs[0]}/libgtmshr.so /usr/local/lib/libgtmshr.so
 sudo ldconfig
 
 cd ~/ewdjs
