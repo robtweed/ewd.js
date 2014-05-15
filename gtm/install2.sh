@@ -32,7 +32,7 @@ fi
 
 cd /usr/lib/fis-gtm
 dirs=( $(find . -maxdepth 1 -type d -printf '%P\n') )
-sudo ln -s ${dirs[0]}/libgtmshr.so /usr/local/lib/libgtmshr.so
+sudo ln -s /usr/lib/fis-gtm/${dirs[0]}/libgtmshr.so /usr/local/lib/libgtmshr.so
 sudo ldconfig
 
 cd ~/ewdjs
