@@ -42,7 +42,55 @@ Again, modify that first *cd* command as appropriate for your system.
 
 You may need to edit the startup file to specify a different webServer port, external listener port,
 child processes pool size, custom directories etc.
-   
+
+## Create a GT.M-based system from scratch
+
+Start up a Ubuntu 14.04 (or later) machine, Virtual Machine or EC2 instance.  Login and type:
+
+      sudo apt-get install -y subversion
+      svn export https://github.com/robtweed/ewd.js/trunk/gtm gtm
+      source gtm/install1.sh
+
+Then close the terminal window, open a new one and log in again.  Now type:
+
+      source gtm/install2.sh
+
+That's it!  You can test that everything has worked by typing:
+
+      node test-gtm
+
+If no errors appear, you should be good to go.  Start EWD.js by typing:
+
+      node ewdStart-gtm gtm-config
+
+Start the new, improved EWDMonitor application using the usual URL:
+
+      http://xx.xx.xx.xx:8080/ewd/ewdMonitor/index.html
+
+## Upgrade a dEWDrop Virtual Machine
+
+To upgrade Node.js and NodeM and install EWD.js on a dEWDrop VM:
+
+      sudo apt-get install subversion
+      svn export https://github.com/robtweed/ewd.js/trunk/dEWDrop dewdrop
+      source dewdrop/upgrade1.sh
+
+When it finishes, close the terminal and open a new one, login, then type:
+
+      source dewdrop/upgrade2.sh 
+
+When finished, you can start up EWD.js using:
+
+      node ewdStart-gtm dewdrop-config
+
+Start the new, improved EWDMonitor application using the usual URL:
+
+      http://xx.xx.xx.xx:8080/ewd/ewdMonitor/index.html
+
+
+Move any existing applications to */home/vista/ewdjs/www*  and modules to */home/vista/ewdjs/node_modules*
+
+
 ##Documentation
 
 For full information on EWD.js, how to install, configure and run it, and how to build EWD.js applications,  
