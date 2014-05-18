@@ -17,3 +17,10 @@ process.env['gtmgbldir'] = gtmroot + '/g/gtm.gld';
 process.env['gtmroutines'] = gtmroot + '/o(' + gtmroot + '/r ' + gtmdir + '/r)'
 if (os.arch() !== 'ia32') process.env['gtmroutines'] = process.env['gtmroutines'] + ' ' + gtmdist + '/libgtmutil.so'
 process.env['gtmroutines'] = process.env['gtmroutines'] + ' ' + gtmdist + ' ' + process.cwd() + '/node_modules/nodem/src';
+
+module.exports = {
+  setParams: function() {
+    return {
+    };
+  }
+};

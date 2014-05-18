@@ -3,24 +3,39 @@ Example EWD.js Startup file for use with GT.M running on Linux
 
 */
 
-if (process.argv[2]) var config = require(process.argv[2]);
+var config = {};
+if (process.argv[2]) config = require(process.argv[2]);
 var ewd = require('ewdjs');
 
-var port = process.argv[3] || 8080;
-var poolsize = process.argv[4] || 2;
-var tracelevel = process.argv[5] || 3;
-var password = process.argv[6] || 'keepThisSecret!';
+var defaults = {
+  port: 8080,
+  poolsize: 2,
+  tracelevel: 3,
+  password: 'keepThisSecret!',
+  ssl: false,
+  database: 'gtm'
+};
+
+if (config.setParams) {
+  var overrides = config.setParams();
+  for (var name in overrides) {
+    defaults[name] = overrides[name];
+  }
+}
 
 var params = {
-      httpPort: port,
-      poolSize: poolsize,
-      database: {
-        type: 'gtm'
-      },
-      traceLevel: tracelevel,
-      management: {
-        password: password
-     }
+  httpPort: defaults.port,
+  poolSize: defaults.poolsize,
+  database: {
+    type: defaults.database
+  },
+  https: {
+    enabled: defaults.ssl
+  },
+  traceLevel: defaults.tracelevel,
+  management: {
+    password: defaults.password
+  }
 };
 
 setTimeout(function() {
