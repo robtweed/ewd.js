@@ -1,7 +1,7 @@
 var EWD = {
   version: {
-    build: 13,
-    date: '7 April 2014'
+    build: 14,
+    date: 21 May 2014'
   }, 
   trace: false,
   initialised: false,
@@ -376,6 +376,11 @@ $(document).ready( function() {
     }
     if (typeof EWD.token !== 'undefined' && typeof EWD.sockets.handlerFunction[obj.type] !== 'undefined') {
       EWD.sockets.handlerFunction[obj.type](obj);
+      obj = null;
+      return;
+    }
+    if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[obj.type]) {
+      EWD.application.onMessage[obj.type](obj);
       obj = null;
       return;
     }

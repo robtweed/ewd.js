@@ -1,4 +1,4 @@
-// 7 April 2014
+// 21 May 2014
 
 EWD.bootstrap3 = {
   createMenu: function() {
@@ -358,9 +358,9 @@ EWD.onSocketMessage = function(messageObj) {
     return;
   }
 
-  if (EWD.application.onMessage) {
-    if (EWD.application.onMessage[messageObj.type]) EWD.application.onMessage[messageObj.type](messageObj);
-  } 
+  //if (EWD.application.onMessage) {
+    //if (EWD.application.onMessage[messageObj.type]) EWD.application.onMessage[messageObj.type](messageObj);
+  //} 
 
   if (EWD.application.messageHandlers) EWD.application.messageHandlers(messageObj);
 
