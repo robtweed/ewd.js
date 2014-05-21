@@ -1,7 +1,7 @@
 var EWD = {
   version: {
     build: 14,
-    date: 21 May 2014'
+    date: '21 May 2014'
   }, 
   trace: false,
   initialised: false,
