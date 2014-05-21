@@ -5,7 +5,11 @@ var fs = require('fs');
 var modulePath = process.cwd();
 
 var copyFilesInDirectory = function(oldPath, newPath) {
-  console.log("Move files in " + oldPath + " to " + newPath);
+  if (!fs.existsSync(oldPath)) {
+    console.log('Error copying files: ' + oldPath + ' does not exist');
+    return;
+  }
+  console.log("Moving files in " + oldPath + " to " + newPath);
   var files = fs.readdirSync(oldPath);
   //if (files) console.log(files.length + ' files found');
   var file;
@@ -104,7 +108,7 @@ var installEWD = function(path) {
     return;
   }
 
-  fs.rmdirSync(oldPath);
+  if (fs.existsSync(oldPath)) fs.rmdirSync(oldPath);
 
   oldPath = modulePath + '/startupExamples/';
   newPath = path;
@@ -115,7 +119,7 @@ var installEWD = function(path) {
     return;
   }
 
-  fs.rmdirSync(oldPath);
+  if (fs.existsSync(oldPath)) fs.rmdirSync(oldPath);
 
   console.log('EWD.js has been installed and configured successfully');
 
