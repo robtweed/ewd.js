@@ -1,7 +1,7 @@
-var ewdGlobals = require('/home/ubuntu/node/node_modules/ewdgateway2/lib/ewdGlobals');
-var interface = require('/home/ubuntu/mumps');
+var ewdGlobals = require('./node_modules/ewdjs/lib/ewdGlobals');
+var interface = require('nodem');
+require('gtm-config');
 var db = new interface.Gtm();
-var util = require('util');
 var ok = db.open();
 ewdGlobals.init(db);
 
