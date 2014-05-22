@@ -15,17 +15,40 @@ of your EWD.js configuration.
 */
 
 var ewd = require('ewdjs');
+var config = {};
+if (process.argv[2]) config = require(process.argv[2]);
+
+var defaults = {
+  cwd: process.env.HOME + '/ewdjs',
+  path: process.env.HOME + '/globalsdb/mgr',
+  port: 8080,
+  poolsize: 2,
+  tracelevel: 3,
+  password: 'keepThisSecret!',
+  ssl: false
+};
+
+if (config.setParams) {
+  var overrides = config.setParams();
+  for (var name in overrides) {
+    defaults[name] = overrides[name];
+  }
+}
 
 params = {
-  cwd: '/opt/ewdlite/',
-  httpPort: 8080,
-  traceLevel: 3,
+  cwd: defaults.cwd,
+  httpPort: defaults.port,
+  poolSize: defaults.poolsize,
   database: {
     type: 'globals',
-    path:"/opt/globalsdb/mgr"
+    path: defaults.path,
   },
+  https: {
+    enabled: defaults.ssl
+  },
+  traceLevel: defaults.tracelevel,
   management: {
-    password: 'keepThisSecret!'
+    password: defaults.password
   }
 };
 
