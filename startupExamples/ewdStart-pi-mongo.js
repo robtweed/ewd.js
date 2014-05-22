@@ -8,7 +8,7 @@ var params = {
       },
       traceLevel: 3,
       database: {
-        nodePath:"noDB",
+        type: 'mongodb',
       },
       management: {
         password: 'keepThisSecret!'
