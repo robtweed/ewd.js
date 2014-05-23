@@ -72,6 +72,31 @@ Start the new, improved EWDMonitor application using the usual URL:
 
       http://xx.xx.xx.xx:8080/ewd/ewdMonitor/index.html
 
+## Create a GlobalsDB-based system from scratch
+
+It's equally as quick and easy to create an EWD.js system that uses GlobalsDB instead of GT.M. 
+Once again, all you need is a new, empty Ubuntu machine, virtual machine or
+EC2 instance.  For the GlobalsDB-based install scripts, you aren't restricted to Ubuntu 14.04 - any
+version will do.
+
+Start up the Ubuntu machine.  Login and type:
+
+      sudo apt-get install -y subversion
+      svn export https://github.com/robtweed/ewd.js/trunk/globalsdb globalsdb
+      source globalsdb/install1.sh
+
+Then close the terminal window, open a new one and log in again.  Now type:
+
+      source globalsdb/install2.sh
+
+That's it!  Start EWD.js by typing:
+
+      node ewdStart-globals
+
+Start the EWDMonitor application using the usual URL:
+
+      http://xx.xx.xx.xx:8080/ewd/ewdMonitor/index.html
+
 ## Upgrade a dEWDrop Virtual Machine
 
 You can automatically upgrade Node.js and NodeM and install EWD.js on a dEWDrop VM as follows:
