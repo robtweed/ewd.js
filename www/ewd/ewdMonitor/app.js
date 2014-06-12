@@ -481,6 +481,28 @@ EWD.application = {
       });
     },
 
+    'mgrPassword.html': function(messageObj) {
+      $('#InfoPanelTitle').text('Management Password Reset');
+      $('#InfoPanelHeading').text('');
+      $('#InfoPanel').modal('show');
+      $('#mgrPassword').val(EWD.password);
+
+      $("#updateMgrPasswordBtn").click(function(){
+        var newPassword = $('#mgrPassword').val();
+        if (newPassword === '') {
+          toastr.error('You must enter a password value');
+        }
+        else {
+          EWD.sockets.sendMessage({
+            type: 'EWD.resetPassword', 
+            value: newPassword,
+            password: EWD.password
+          });
+        }
+      });
+
+    },
+
     'monDest.html': function(messageObj) {
       $('#InfoPanelTitle').text('Monitoring Destination');
       $('#InfoPanelHeading').text('');
@@ -914,6 +936,16 @@ EWD.application = {
         type: "getWSUsers"
       });
 
+      $("#mgrPasswordBtn").on('click', function() {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'mgrPassword.html',
+            targetId: 'InfoPanelText'
+          }
+        });
+      });
+
       $("#wsMgr_back").on('click', function() {
         $("#manageUsersPanel").show();
         $("#editUsersPanel").hide();
@@ -1310,6 +1342,16 @@ EWD.application = {
       $('#internals_requestsByProcess').text(JSON.stringify(messageObj.requestsByProcess, null, 2));
       $('#internals_queueByPid').text(JSON.stringify(messageObj.queueByPid, null, 2));
       $('#internals_poolSize').text(messageObj.poolSize);
+      $('#internals_params').text(JSON.stringify(messageObj.startParams, null, 2));
+    },
+
+    'EWD.resetPassword': function(messageObj) {
+     if (!messageObj.error) {
+       EWD.password = messageObj.password
+     }
+     else {
+       toastr.error(messageObj.message);
+     }
     },
 
     keepAlive: function(messageObj) {
