@@ -93,6 +93,7 @@ EWD.application = {
       html = html + '<td class="cpPid" id="cpPid' + pid + '">' + pid + '</td>';
       html = html + '<td id="cpRequests' + pid + '">0</td>';
       html = html + '<td id="cpAvailable' + pid + '">true</td>';
+      html = html + '<td id="cpDebugPort">Please refresh<td>';
       //html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '">Stop</button></td>';
       html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Stop Child Process"><span class="glyphicon glyphicon-remove"></span></button></td>';
       html = html + '</tr>';
@@ -148,6 +149,13 @@ EWD.application = {
           toastr.clear();
           toastr.warning('At least one Child Process must be left running');
         }
+      });
+      $('.cpDebug').unbind('click');
+      $('.cpDebug').on('click', function(e) {
+        var id = e.target.id;
+        if (!id) id = e.target.parentNode.id;
+        var port = id.split('cpDebug')[1];
+        window.open('http://' + window.location.hostname + ':8181/debug?port=' + port, '_blank');
       });
     };
 
@@ -1298,6 +1306,12 @@ EWD.application = {
           html = html + '<td class="cpPid" id="cpPid' + pid + '">' + pid + '</td>';
           html = html + '<td id="cpRequests' + pid + '">' + childProcess.noOfRequests + '</td>';
           html = html + '<td id="cpAvailable' + pid + '">' + childProcess.available + '</td>';
+          if (childProcess.debugPort !=='') {
+            html = html + '<td id="cpDebugPort' + childProcess.debugPort + '"><button class="btn btn-warning pull-right cpDebug" type="button" id="cpDebug' + childProcess.debugPort +'"><span class="glyphicon glyphicon-wrench"></span></td>';
+          }
+          else {
+            html = html + '<td id="cpDebugPort">&nbsp</td>';
+          }
           //html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '">Stop</button></td>';
           html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Stop Child Process"><span class="glyphicon glyphicon-remove"></span></button></td>';
           html = html + '</tr>';
