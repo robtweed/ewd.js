@@ -12,7 +12,8 @@ process.env['GTM_REPLICATION'] = 'off';
 process.env['gtmdir'] = gtmdir;
 process.env['gtmver'] = gtmver;
 process.env['gtm_dist'] = gtmdist;
-process.env['GTMCI'] = process.cwd() + '/node_modules/nodem/resources/calltab.ci';
+//process.env['GTMCI'] = process.cwd() + '/node_modules/nodem/resources/calltab.ci';
+process.env['GTMCI'] = process.cwd() + '/node_modules/nodem/resources/nodem.ci';
 process.env['gtmgbldir'] = gtmroot + '/g/gtm.gld';
 process.env['gtmroutines'] = gtmroot + '/o(' + gtmroot + '/r ' + gtmdir + '/r)'
 if (os.arch() !== 'ia32') process.env['gtmroutines'] = process.env['gtmroutines'] + ' ' + gtmdist + '/libgtmutil.so'

@@ -1,3 +1,7 @@
+var isInteger = function(n) {    
+  return $.isNumeric(n) && parseInt(n, 10) > 0;
+};
+
 EWD.application = {
   name: 'ewdMonitor',
   timeout: 3600,
@@ -87,14 +91,17 @@ EWD.application = {
       }
     };
 
-    EWD.addChildProcessToTable = function(pid) {
+    EWD.addChildProcessToTable = function(pid, debug) {
       var html = '';
       html = html + '<tr class="table" id="cpRow' + pid + '">';
       html = html + '<td class="cpPid" id="cpPid' + pid + '">' + pid + '</td>';
       html = html + '<td id="cpRequests' + pid + '">0</td>';
       html = html + '<td id="cpAvailable' + pid + '">true</td>';
-      //html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '">Stop</button></td>';
-      html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Stop Child Process"><span class="glyphicon glyphicon-remove"></span></button></td>';
+      html = html + '<td>'
+      if (debug) {
+        html = html + '<button class="btn btn-info pull-left cpNodeInspector" type="button" id="cpNodeInspectorBtn' + debug.port + '_' + debug.web_port + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start Debugging (web_port=' + debug.web_port + ')"><span class="glyphicon glyphicon-wrench"></span></button>';
+      }
+      html = html + '<button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Stop Child Process"><span class="glyphicon glyphicon-remove"></span></button></td>';
       html = html + '</tr>';
       EWD.memory['cpPid' + pid] = {
         rss: 'Not yet available',
@@ -147,6 +154,15 @@ EWD.application = {
         else {
           toastr.clear();
           toastr.warning('At least one Child Process must be left running');
+        }
+      });
+      $('.cpNodeInspector').unbind('click');
+      $('.cpNodeInspector').on('click', function(e) {
+        if ($('#childProcessTable tr').length > 2) {
+          var id = e.target.id;
+          if (!id) id = e.target.parentNode.id;
+          var ports = id.split('cpNodeInspectorBtn')[1].split('_');
+          window.open('http://' + window.location.hostname + ':' + ports[1] + '/debug?port=' + ports[0], '_blank');
         }
       });
     };
@@ -384,7 +400,17 @@ EWD.application = {
       EWD.sockets.sendMessage({
         type: "EWD.workerProcess", 
         action:  'add', 
-        password: EWD.password
+        password: EWD.password,
+        debug: false
+      });
+    });
+
+    $('#cpDebugBtn').click(function(e) {
+      EWD.sockets.sendMessage({
+        type: "EWD.workerProcess", 
+        action:  'add', 
+        password: EWD.password,
+        debug: true
       });
     });
 
@@ -499,6 +525,44 @@ EWD.application = {
             password: EWD.password
           });
         }
+      });
+
+    },
+
+    'debugForm.html': function(messageObj) {
+      $('#InfoPanelTitle').text('Reset Node Inspector Ports');
+      $('#InfoPanelHeading').text('');
+      $('#InfoPanel').modal('show');
+      EWD.sockets.sendMessage({
+        type: 'EWD.getDebugPorts',
+        password: EWD.password
+      });
+
+      $("#updateDebugBtn").click(function(){
+        var childPort = $('#debug_child_port').val();
+        if (childPort === '') {
+          toastr.error('You must enter a value for the Child Process Debugger Port');
+          return;
+        }
+        if (!isInteger(childPort)) {
+          toastr.error('Invalid Child Process Debugger Port');
+          return;
+        }
+        var webPort = $('#debug_web_port').val();
+        if (webPort === '') {
+          toastr.error("You must enter a value for Node Inspector's Web Port");
+          return;
+        }
+        if (!isInteger(webPort)) {
+          toastr.error("Invalid value for Node Inspector's Web Port");
+          return;
+        }
+        EWD.sockets.sendMessage({
+          type: 'EWD.changeDebugPorts', 
+          child_port: childPort,
+          web_port: webPort,
+          password: EWD.password
+        });
       });
 
     },
@@ -659,6 +723,15 @@ EWD.application = {
       EWD.sockets.sendMessage({
         type: "EWD.inspect",
         password: EWD.password
+      });
+      $('#internalsDebugBtn').click(function(e) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'debugForm.html',
+            targetId: 'InfoPanelText'
+          }
+        });
       });
     },
 
@@ -1298,8 +1371,11 @@ EWD.application = {
           html = html + '<td class="cpPid" id="cpPid' + pid + '">' + pid + '</td>';
           html = html + '<td id="cpRequests' + pid + '">' + childProcess.noOfRequests + '</td>';
           html = html + '<td id="cpAvailable' + pid + '">' + childProcess.available + '</td>';
-          //html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '">Stop</button></td>';
-          html = html + '<td><button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Stop Child Process"><span class="glyphicon glyphicon-remove"></span></button></td>';
+          html = html + '<td>';
+          if (childProcess.debug.enabled) {
+            html = html + '<button class="btn btn-info pull-left cpNodeInspector" type="button" id="cpNodeInspectorBtn' + childProcess.debug.port + '_' + childProcess.debug.web_port + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start Debugging (web_port=' + childProcess.debug.web_port + ')"><span class="glyphicon glyphicon-wrench"></span></button>';
+          }     
+          html = html + '<button class="btn btn-danger pull-right cpStop" type="button" id="cpStopBtn' + pid + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Stop Child Process"><span class="glyphicon glyphicon-remove"></span></button></td>';
           html = html + '</tr>';
           EWD.memory['cpPid' + pid] = {
             rss: 'Not yet available',
@@ -1327,7 +1403,7 @@ EWD.application = {
     workerProcess: function(messageObj) {
       if (EWD.application.loggedIn) {
         if (messageObj.action === 'add') {
-          var html = EWD.addChildProcessToTable(messageObj.pid);
+          var html = EWD.addChildProcessToTable(messageObj.pid, messageObj.debug);
           $('#childProcessTable tbody').append(html);
           EWD.enablePopovers();
           $('[data-toggle="tooltip"]').tooltip();
@@ -1346,12 +1422,23 @@ EWD.application = {
     },
 
     'EWD.resetPassword': function(messageObj) {
-     if (!messageObj.error) {
-       EWD.password = messageObj.password
-     }
-     else {
-       toastr.error(messageObj.message);
-     }
+      if (!messageObj.error) {
+        EWD.password = messageObj.password
+      }
+      else {
+        toastr.error(messageObj.message);
+      }
+      $('#InfoPanel').modal('hide');
+    },
+
+    'EWD.getDebugPorts': function(messageObj) {
+      $('#debug_child_port').val(messageObj.child_port);
+      $('#debug_web_port').val(messageObj.web_port);
+    },
+
+    'EWD.changeDebugPorts': function(messageObj) {
+      $('#InfoPanel').modal('hide');
+      $('#internals_Nav').click()
     },
 
     keepAlive: function(messageObj) {
