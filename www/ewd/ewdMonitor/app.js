@@ -158,12 +158,10 @@ EWD.application = {
       });
       $('.cpNodeInspector').unbind('click');
       $('.cpNodeInspector').on('click', function(e) {
-        if ($('#childProcessTable tr').length > 2) {
-          var id = e.target.id;
-          if (!id) id = e.target.parentNode.id;
-          var ports = id.split('cpNodeInspectorBtn')[1].split('_');
-          window.open('http://' + window.location.hostname + ':' + ports[1] + '/debug?port=' + ports[0], '_blank');
-        }
+        var id = e.target.id;
+        if (!id) id = e.target.parentNode.id;
+        var ports = id.split('cpNodeInspectorBtn')[1].split('_');
+        window.open('http://' + window.location.hostname + ':' + ports[1] + '/debug?port=' + ports[0], '_blank');
       });
     };
 
