@@ -1,8 +1,33 @@
 #!/usr/bin/env bash
 
+# Install and configure a GT.M-based EWD.js System from scratch
+
+# Update first just to be sure
+
+sudo apt-get update
+sudo apt-get install -y openssh-server
+
+# Install GT.M
+
+sudo apt-get install -y fis-gtm
+
+# Create standard default database setup
+
+cd /usr/lib/fis-gtm
+dirs=( $(find . -maxdepth 1 -type d -printf '%P\n') )
+cd ~
+echo -e 'H\n' | /usr/lib/fis-gtm/${dirs[0]}/gtm -direct
+
+# Install NVM (Node.js Version Manager)
+
+sudo apt-get install -y curl
+curl https://raw.githubusercontent.com/creationix/nvm/v0.7.0/install.sh | sh
+
 source ~/.nvm/nvm.sh
-nvm install 0.10.29
-echo 'nvm use 0.10.29' >> ~/.profile
+nvm alias default 0.10
+nvm install 0.10
+nvm use default
+echo 'nvm use default' >> ~/.profile
 
 # Now ready to install EWD.js and Nodem:
 
@@ -42,6 +67,4 @@ cd ~/ewdjs
 
 # cd ~/ewdjs
 # node ewdStart-gtm gtm-config
-
-
 

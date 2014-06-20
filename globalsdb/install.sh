@@ -31,7 +31,35 @@ rm -rf kit_unix_globals
 # Install NVM
 
 curl https://raw.githubusercontent.com/creationix/nvm/v0.7.0/install.sh | sh
+source ~/.nvm/nvm.sh
+nvm alias default 0.10
+nvm install 0.10
+nvm use default
+echo 'nvm use default' >> ~/.profile
 
-# Now stop terminal process and restart, then run part 2 of installer: source globalsdb/install2.sh
+# Now ready to install EWD.js and Nodem:
+
+cd ~
+mkdir ewdjs
+cd ewdjs
+npm install ewdjs
+npm install nodem
+
+# Now install/configure EWD.js
+
+cd node_modules/ewdjs
+node install silent ~/ewdjs
+
+# Move the Node.js interface file into the correct place
+
+mv ~/globalsdb/bin/cache0100.node ~/ewdjs/node_modules/cache.node
+
+cd ~/ewdjs
+
+# now ready to start EWD.js using:
+
+# cd ~/ewdjs
+# node ewdStart-gtm gtm-config
+
 
  
