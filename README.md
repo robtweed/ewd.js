@@ -58,11 +58,7 @@ Start up the Ubuntu 14.04 machine.  Login and type:
 
       sudo apt-get install -y subversion
       svn export https://github.com/robtweed/ewd.js/trunk/gtm gtm
-      source gtm/install1.sh
-
-Then close the terminal window, open a new one and log in again.  Now type:
-
-      source gtm/install2.sh
+      source gtm/install.sh
 
 That's it!  You can test that everything has worked by typing:
 
@@ -87,11 +83,7 @@ Start up the Ubuntu machine.  Login and type:
 
       sudo apt-get install -y subversion
       svn export https://github.com/robtweed/ewd.js/trunk/globalsdb globalsdb
-      source globalsdb/install1.sh
-
-Then close the terminal window, open a new one and log in again.  Now type:
-
-      source globalsdb/install2.sh
+      source globalsdb/install.sh
 
 That's it!  Start EWD.js by typing:
 
@@ -107,11 +99,7 @@ You can automatically upgrade Node.js and NodeM and install EWD.js on a dEWDrop 
 
       sudo apt-get install subversion
       svn export https://github.com/robtweed/ewd.js/trunk/dEWDrop dewdrop
-      source dewdrop/upgrade1.sh
-
-When it finishes, close the terminal and open a new one, login, then type:
-
-      source dewdrop/upgrade2.sh 
+      source dewdrop/upgrade.sh
 
 When finished, you can start up EWD.js using:
 
