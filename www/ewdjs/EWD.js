@@ -1,7 +1,7 @@
 var EWD = {
   version: {
-    build: 15,
-    date: '10 June 2014'
+    build: 16,
+    date: '23 June 2014'
   }, 
   trace: false,
   initialised: false,
@@ -235,7 +235,32 @@ var EWD = {
               if (typeof console !== 'undefined') {
                 if (EWD.sockets.log) console.log("sendMessage: " + JSON.stringify(params));
               }
-              io.json.send(JSON.stringify(params)); 
+              if (params.done) {
+                if (!EWD.application.onMessage) EWD.application.onMessage = {};
+                EWD.application.onMessage[params.type] = params.done;
+                delete params.done;
+              }
+              if (params.ajax &&typeof $ !== 'undefined') {
+                delete params.ajax;
+                $.ajax({
+                  url: '/ajax',
+                  type: 'post',
+                  data: JSON.stringify(params),
+                  dataType: 'json',
+                  timeout: 10000
+                })
+                .done(function (data ) {
+                  if (EWD.sockets.log) console.log("onMessage: " + JSON.stringify(data));
+                  // invoke the message handler function for returned type
+                  if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[data.type]) {
+                    EWD.application.onMessage[data.type](data);
+                    data = null;
+                  }
+                });
+              }
+              else {
+                io.json.send(JSON.stringify(params)); 
+              }
             }
           };
         })();

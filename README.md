@@ -14,6 +14,8 @@ Google Group for discussions, support, advice etc: [http://groups.google.co.uk/g
 Many thanks to Christopher Edwards (christopher.edwards@krminc.com) for his work on Node Inspector
 integration which has been adapted and included in EWD.js (build 67 and later).
 
+Thanks also to Ward De Backer for suggestions relating to user authentication
+
 ## Installing EWD.js
 
 Create a directory for your EWD.js environment, eg *~/ewdjs*

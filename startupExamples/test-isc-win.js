@@ -1,4 +1,4 @@
-var ewdGlobals = require('./node_modules/ewdjs/lib/ewdGlobals');
+var ewdGlobals = require('./node_modules/ewdjs/node_modules/globalsjs');
 var interface = require('cache');
 
 // Modify these parameters to match your GlobalsDB or Cache System:
