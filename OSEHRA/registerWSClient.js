@@ -1,4 +1,4 @@
-var ewdGlobals = require('./node_modules/ewdjs/lib/ewdGlobals');
+var ewdGlobals = require('./node_modules/ewdjs/node_modules/globalsjs');
 var interface = require('nodem');
 require('gtm-config');
 var db = new interface.Gtm();
