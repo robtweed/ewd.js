@@ -1,6 +1,6 @@
 var EWD = {
   version: {
-    build: 16,
+    build: 17,
     date: '23 June 2014'
   }, 
   trace: false,
@@ -19,14 +19,16 @@ var EWD = {
     var tag = document.createElement('div');
     tag.innerHTML = html;
   },
-  getFragment: function(file, targetId) {
-    EWD.sockets.sendMessage({
+  getFragment: function(file, targetId, onFragment) {
+    var messageObj = {
       type: "EWD.getFragment", 
       params:  {
         file: file,
         targetId: targetId
       }
-    }); 
+    };
+    if (onFragment) messageObj.done = onFragment; 
+    EWD.sockets.sendMessage(messageObj); 
   },
   json2XML: function(document, tagName, xml) {
     if (!xml) xml = '';
@@ -236,8 +238,14 @@ var EWD = {
                 if (EWD.sockets.log) console.log("sendMessage: " + JSON.stringify(params));
               }
               if (params.done) {
-                if (!EWD.application.onMessage) EWD.application.onMessage = {};
-                EWD.application.onMessage[params.type] = params.done;
+                if (params.type === 'EWD.getFragment') {
+                  if (!EWD.application.onFragment) EWD.application.onFragment = {};
+                  EWD.application.onFragment[params.params.file] = params.done; 
+                }
+                else {
+                  if (!EWD.application.onMessage) EWD.application.onMessage = {};
+                  EWD.application.onMessage[params.type] = params.done;
+                }
                 delete params.done;
               }
               if (params.ajax &&typeof $ !== 'undefined') {
@@ -361,9 +369,9 @@ var EWD = {
       if (obj.type === 'EWD.getFragment') {
         if (obj.message.targetId && document.getElementById(obj.message.targetId)) {
           document.getElementById(obj.message.targetId).innerHTML = obj.message.content;
-        }
-        if (EWD.application.onFragment) {
-          if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
+          if (EWD.application.onFragment) {
+            if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
+          }
         } 
         return;
       }
