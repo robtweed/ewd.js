@@ -1,7 +1,7 @@
 {
   "name": "ewdjs",
   "description": "EWD.js: Node.js-based Application Framework for MongoDB, Cache, GlobalsDB and GT.M",
-  "version": "0.67.4",
+  "version": "0.68.1",
   "author": {
     "name": "Rob Tweed",
     "email": "rtweed@mgateway.com"
@@ -21,7 +21,8 @@
     "node": ">=0.2.2"
   },
   "dependencies": {
-    "socket.io": ">=0.9.6"
+    "socket.io": ">=0.9.6",
+    "globalsjs": ">=0.20.0"
   },
   "licenses": [
     "Apache"
