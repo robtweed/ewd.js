@@ -21,7 +21,7 @@ echo -e 'H\n' | /usr/lib/fis-gtm/${dirs[0]}/gtm -direct
 # Install NVM (Node.js Version Manager)
 
 sudo apt-get install -y curl
-curl https://raw.githubusercontent.com/creationix/nvm/v0.7.0/install.sh | sh
+curl https://raw.githubusercontent.com/creationix/nvm/v0.10.0/install.sh | sh
 
 source ~/.nvm/nvm.sh
 nvm alias default 0.10

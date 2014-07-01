@@ -26,7 +26,7 @@ sudo rm -rf /var/lib/dpkg/alternatives/npm
 # Install NVM and use it to install latest Node.js
 
 sudo chattr -i ~/.profile
-curl https://raw.githubusercontent.com/creationix/nvm/v0.7.0/install.sh | sh
+curl https://raw.githubusercontent.com/creationix/nvm/v0.10.0/install.sh | sh
 source ~/.nvm/nvm.sh
 nvm alias default 0.10
 nvm install 0.10
@@ -51,8 +51,6 @@ node install silent /home/vista/ewdjs
 cd ~/ewdjs/node_modules/nodem/lib
 rm mumps.node
 mv mumps10.node_i686 mumps.node
-
-cd ~/ewdjs
 
 # now ready to start EWD.js using:
 
