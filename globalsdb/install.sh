@@ -9,9 +9,15 @@ sudo apt-get install -y wget gzip openssh-server curl
 
 # Install GlobalsDB
 
+# First increase shared memory quotas
+
+sudo sysctl -w kernel.shmall=536870912
+sudo sysctl -w kernel.shmmax=536870912
+sudo /bin/su -c "echo 'kernel.shmall=536870912' >> /etc/sysctl.conf"
+sudo /bin/su -c "echo 'kernel.shmmax=536870912' >> /etc/sysctl.conf"
+
 cd ~
 wget http://globalsdb.org/sites/default/files/globals_2013.2.0.350.0_unix.tar.gz
-
 
 gzip -cd globals_2013.2.0.350.0_unix.tar.gz | tar -x
 rm globals_2013.2.0.350.0_unix.tar.gz
