@@ -147,9 +147,11 @@ EWD.application = {
             password: EWD.password,
             pid: pid
           });
+          /*
           $('#cpRow' + pid).remove();
           delete EWD.memory.plot['cpPid' + pid];
           delete EWD.memory['cpPid' + pid];
+          */
         }
         else {
           toastr.clear();
@@ -1437,6 +1439,15 @@ EWD.application = {
     'EWD.changeDebugPorts': function(messageObj) {
       $('#InfoPanel').modal('hide');
       $('#internals_Nav').click()
+    },
+
+    'EWD.childProcessStopped': function(messageObj) {
+      var pid = messageObj.pid;
+      if (pid) {
+        $('#cpRow' + pid).remove();
+        delete EWD.memory.plot['cpPid' + pid];
+        delete EWD.memory['cpPid' + pid];
+      }
     },
 
     keepAlive: function(messageObj) {
