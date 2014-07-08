@@ -52,7 +52,7 @@ EWD.bootstrap3 = {
      * Footer buttons need suffix of '[id]_Footer'
      * navbar and footer buttons will then switch the current container with '[id]_Container'
      * during animation navbar & footer buttons are disabled
-     * if targetId does not have the _Nav the button is ignored to allow for a custom event 
+     * if targetId does not have the _Nav suffix the button is ignored to allow for a custom event 
   */
   nav: {
     // swap pages from current to target
