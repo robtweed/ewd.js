@@ -1,4 +1,4 @@
-// 21 May 2014
+// 9 July 2014
 
 EWD.bootstrap3 = {
   createMenu: function() {
@@ -52,11 +52,16 @@ EWD.bootstrap3 = {
      * Footer buttons need suffix of '[id]_Footer'
      * navbar and footer buttons will then switch the current container with '[id]_Container'
      * during animation navbar & footer buttons are disabled
+     * if targetId does not have the _Nav suffix the button is ignored to allow for a custom event 
   */
   nav: {
     // swap pages from current to target
     // targetId = string ID of clicked navbar/footer link (e.g. ewd_Nav/ewd_Footer)
     pageSwap: function(targetId) {
+      var targetSuffix = targetId.split('_')[1];
+      if (typeof targetSuffix === 'undefined' || targetSuffix !== 'Nav') {
+        return;
+      }
       if ($('#' + targetId).data('link')) {
         var link = $('#' + targetId).data('link');
         window.open(link);
@@ -189,12 +194,18 @@ EWD.onSocketsReady = function() {
     }
     catch(err) {}
   }
-  $('#loginPanel').on('show.bs.modal', function() {
-    setTimeout(function() {
-      document.getElementById('username').focus();
-    },1000);
-  });
+
   if (EWD.application.login) {
+    $('#loginPanel').on('show.bs.modal', function() {
+      setTimeout(function() {
+        document.getElementById('username').focus();
+      },1000);
+    });
+    $('#loginPanelBody').keydown(function(event){
+      if (event.keyCode === 13) {
+        document.getElementById('loginBtn').click();
+      }
+    });
     if ($('#loginPanel').length > 0) $('#loginPanel').modal({show: true, backdrop: 'static'});
   }
   else {
@@ -206,12 +217,6 @@ EWD.onSocketsReady = function() {
     if (typeof toastr !== 'undefined') toastr.options.target = 'body';
     if ($('#main_Container').length > 0) $('#main_Container').show();
   }
-
-  $('#loginPanelBody').keydown(function(event){
-    if (event.keyCode === 13) {
-      document.getElementById('loginBtn').click();
-    }
-  });
 
   $('#newPatient').click(function(e) {
     e.preventDefault();
@@ -232,27 +237,30 @@ EWD.onSocketsReady = function() {
     EWD.bootstrap3.enableSelect2();
   }
 
+  
   // Login form button handler
 
-  $('body').on( 'click', '#loginBtn', function(event) {
-    event.preventDefault(); // prevent default bootstrap behavior
-    EWD.sockets.submitForm({
-      fields: {
-        username: $('#username').val(),
-        password: $('#password').val()
-      },
-      messageType: 'EWD.form.login',
-      alertTitle: 'Login Error',
-      toastr: {
-        target: 'loginPanel'
-      },
-      popover: {
-        buttonId: 'loginBtn',
-        container: 'loginPanel',
-        time: 2000
-      }
-    }); 
-  });
+  if (EWD.application.login) {
+    $('body').on( 'click', '#loginBtn', function(event) {
+      event.preventDefault(); // prevent default bootstrap behavior
+      EWD.sockets.submitForm({
+        fields: {
+          username: $('#username').val(),
+          password: $('#password').val()
+        },
+        messageType: 'EWD.form.login',
+        alertTitle: 'Login Error',
+        toastr: {
+          target: 'loginPanel'
+        },
+        popover: {
+          buttonId: 'loginBtn',
+          container: 'loginPanel',
+          time: 2000
+        }
+      }); 
+    });
+  }
 
   // Patient Selector Form button handler
   $('body').on( 'click', '#patientBtn', function(event) {
