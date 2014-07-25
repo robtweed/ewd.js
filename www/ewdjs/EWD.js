@@ -1,7 +1,7 @@
 var EWD = {
   version: {
-    build: 17,
-    date: '23 June 2014'
+    build: 18,
+    date: '16 July 2014'
   }, 
   trace: false,
   initialised: false,
@@ -143,10 +143,12 @@ var EWD = {
       }
       if (params.alertTitle) payload.alertTitle = params.alertTitle;
       //payload.js_framework = framework;
-      EWD.sockets.sendMessage({
+      var msgObj = {
         type: params.messageType, 
         params: payload
-      });
+      };
+      if (params.done) msgObj.done = params.done;
+      EWD.sockets.sendMessage(msgObj);
     }
   },
   utils: {
