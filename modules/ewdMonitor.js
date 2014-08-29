@@ -1,3 +1,10 @@
+var htmlEscape = function(text) {
+  return text.toString().replace(/&/g, '&amp;').
+    replace(/</g, '&lt;').  // it's not neccessary to escape >
+    replace(/"/g, '&quot;').
+    replace(/'/g, '&#039;');
+};
+
 module.exports = {
 
   onMessage: {
@@ -97,7 +104,7 @@ module.exports = {
           if (subNode._hasValue) {
             type = 'folder';
             if (!subNode._hasProperties) type = 'item';
-            rec = {name: subscript + '<span>: </span>' + subNode._value, type: type}
+            rec = {name: htmlEscape(subscript) + '<span>: </span>' + htmlEscape(subNode._value), type: type}
           }
           else {
             rec = {name: subscript, type: 'folder'}

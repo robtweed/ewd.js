@@ -1,3 +1,33 @@
+/*
+
+ ----------------------------------------------------------------------------
+ | ewdMonitor: EWD.js Monitor Application                                   |
+ |                                                                          |
+ | Copyright (c) 2013-14 M/Gateway Developments Ltd,                        |
+ | Reigate, Surrey UK.                                                      |
+ | All rights reserved.                                                     |
+ |                                                                          |
+ | http://www.mgateway.com                                                  |
+ | Email: rtweed@mgateway.com                                               |
+ |                                                                          |
+ |                                                                          |
+ | Licensed under the Apache License, Version 2.0 (the "License");          |
+ | you may not use this file except in compliance with the License.         |
+ | You may obtain a copy of the License at                                  |
+ |                                                                          |
+ |     http://www.apache.org/licenses/LICENSE-2.0                           |
+ |                                                                          |
+ | Unless required by applicable law or agreed to in writing, software      |
+ | distributed under the License is distributed on an "AS IS" BASIS,        |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. |
+ | See the License for the specific language governing permissions and      |
+ |  limitations under the License.                                          |
+ ----------------------------------------------------------------------------
+
+Build 9: 29 August 2014
+
+*/
+
 var isInteger = function(n) {    
   return $.isNumeric(n) && parseInt(n, 10) > 0;
 };
@@ -1137,7 +1167,7 @@ EWD.application = {
 
     consoleText: function(messageObj) {
       if (EWD.application.loggedIn) {
-        var html = '<div>' + messageObj.text + '</div>';
+        var html = $('<div/>').text(messageObj.text).html();
         $('#consoleText').append(html);
         $("#consoleText").animate({ scrollTop: $('#consoleText')[0].scrollHeight}, 5);
         if ($("#consoleText").children().size() > (EWD.maxConsoleLength || 1000)) {
