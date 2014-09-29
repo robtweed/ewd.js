@@ -34,8 +34,9 @@ module.exports = {
         var json = params.json.replace(/(\r\n|\n|\r)/gm,"");
         if (json === '') return 'You must enter a JSON document';
         //console.log('json = ' + json);
+        var doc;
         try {
-          var doc = JSON.parse(json);
+          doc = JSON.parse(json);
         }
         catch(error) {
           return 'Invalid JSON: ' + error;
@@ -48,7 +49,7 @@ module.exports = {
           ok: true,
           globalName: params.globalName
         });
-        return ''
+        return '';
       }
     },
 
@@ -93,7 +94,7 @@ module.exports = {
           globalName: params.globalName,
           rootLevel: params.rootLevel,
           subscripts: []
-        }
+        };
         if (params.sessid) data.sessid = params.sessid;
         var rec;
         var count = 0;
@@ -104,10 +105,10 @@ module.exports = {
           if (subNode._hasValue) {
             type = 'folder';
             if (!subNode._hasProperties) type = 'item';
-            rec = {name: htmlEscape(subscript) + '<span>: </span>' + htmlEscape(subNode._value), type: type}
+            rec = {name: htmlEscape(subscript) + '<span>: </span>' + htmlEscape(subNode._value), type: type};
           }
           else {
-            rec = {name: subscript, type: 'folder'}
+            rec = {name: subscript, type: 'folder'};
           }
           rec.subscripts = params.subscripts.slice(0);
           rec.subscripts.push(subscript);
@@ -158,7 +159,7 @@ module.exports = {
     },
 
     keepAlive: function(params, ewd) {
-      return {ok: true}
+      return {ok: true};
     },
 
     getWSUsers: function(params, ewd) {

@@ -1,7 +1,7 @@
 var EWD = {
   version: {
-    build: 18,
-    date: '16 July 2014'
+    build: 19,
+    date: '29 September 2014'
   }, 
   trace: false,
   initialised: false,
@@ -29,6 +29,89 @@ var EWD = {
     };
     if (onFragment) messageObj.done = onFragment; 
     EWD.sockets.sendMessage(messageObj); 
+  },
+  require: function(options) {
+    if (typeof require !== 'function') {
+      console.log('ERROR: unable to invoke EWD.require as the dependency require.js has not been loaded');
+      return;
+    }
+    // set require config if defined
+    if (typeof options.requireConfig === 'object') {
+      require.config(options.requireConfig);
+    }
+    // check if custom namespace is defined
+    if (typeof options.nameSpace === 'undefined') {
+      options.nameSpace = options.serviceName;
+    }
+    //console.log('namespace set to: ' + options.nameSpace)
+
+    require([options.serviceName], function(module) {
+      function invokeOnServiceReady(options) {
+        if (typeof EWD.application.onServiceReady[options.serviceName] === 'function' 
+        &&  typeof options.done === 'undefined') {
+          EWD.application.onServiceReady[options.serviceName]();
+        }
+        else if (typeof options.done === 'function'){
+          options.done(module);
+        }
+      };
+
+      function invokeServiceInit(options, module) {
+        if (typeof module.init === 'function') {
+          //console.log('invoking init with namespace: ' + options.nameSpace);
+          module.init(options.nameSpace);
+        }
+      }
+
+      var method;
+      // extend onMessage
+      if (typeof module.onMessage === 'object') {
+        for (method in module.onMessage) {
+          EWD.application.onMessage[options.nameSpace+'-'+method] = module.onMessage[method];
+        }
+      }
+      // extend onFragment
+      if (typeof module.onFragment === 'object') {
+        for (method in module.onFragment) {
+          EWD.application.onFragment[method] = module.onFragment[method];
+        }
+      }
+
+      // set correct fragmentName
+      var fragmentName = false;
+      if (typeof options.fragmentName === 'string' && options.fragmentName.length > 0) {
+        fragmentName = options.fragmentName;
+      }
+      else if (typeof module.fragmentName === 'string' && module.fragmentName.length > 0) {
+        fragmentName = module.fragmentName;
+      }
+      // fetch fragment if fragmentName is supplied
+      if (fragmentName) {
+        // clone onFragment to overwrite & extend it with
+        if (typeof EWD.application.onFragment[fragmentName] === 'function') {
+          var _onFragment = EWD.application.onFragment[fragmentName];
+        }
+        EWD.getFragment(fragmentName, options.targetSelector, function(messageObj) {
+          _onFragment(messageObj);
+          invokeServiceInit(options, module);
+          invokeOnServiceReady(options);
+          // restore original onFragment handler 
+          // prevents EWD.application.onFragment[fragmentName] from being continually extended by this
+          EWD.application.onFragment[fragmentName] = _onFragment;
+        });
+      }
+      // no fragment to fetch, just run the init and service callbacks
+      else {
+        invokeServiceInit(options,module);
+        invokeOnServiceReady(options);
+      }
+      // reset baseUrl for services if they were overridden
+      if (typeof options.requireConfig === 'object') {
+        require.config({
+          baseUrl: EWD.application.getServicePath()
+        });
+      }
+    });
   },
   json2XML: function(document, tagName, xml) {
     if (!xml) xml = '';
@@ -221,6 +304,24 @@ var EWD = {
         return;
       }
       if (obj.type === 'EWD.registered') {
+        //changed
+        // handle service path
+        // if require
+        // user require config obj.servicepath
+        // SJT Addition for setting up require.js service path 
+
+        if (typeof require === 'function') {
+          // add tailing / to path if necessary
+          if (obj.servicePath.slice(-1) !== '/') obj.servicePath += '/';
+          require.config({
+            baseUrl:obj.servicePath
+          });
+          // expose method to retrieve servicePath
+          EWD.application.getServicePath = function() {
+            return obj.servicePath;
+          };
+        }
+
         EWD.sockets.sendMessage = (function() {
           var applicationName = EWD.application.name;
           delete EWD.application.name;
@@ -368,12 +469,27 @@ var EWD = {
         }
         return;
       }
+      // SJT New additions for jQuery selector support for fragment target
       if (obj.type === 'EWD.getFragment') {
-        if (obj.message.targetId && document.getElementById(obj.message.targetId)) {
+        if (obj.message.targetId) {
+          // check jQuery is loaded, targetId is valid jQuery selector and selector matches 1+ elements 
+          if (window.jQuery && $(obj.message.targetId) instanceof jQuery && $(obj.message.targetId).length > 0) { // handle a jquery object
+            // inject fragment to each matched element
+            $(obj.message.targetId).each(function(ix,element) {
+              $(element).html(obj.message.content);
+            });
+            // invoke onFragment handler
+            if (EWD.application.onFragment) {
+              if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
+            }
+          }
+          // otherwise use jQuery-less fragment target handling
+          else if (document.getElementById(obj.message.targetId)){ // handle as string id
           document.getElementById(obj.message.targetId).innerHTML = obj.message.content;
           if (EWD.application.onFragment) {
             if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
           }
+        } 
         } 
         return;
       }

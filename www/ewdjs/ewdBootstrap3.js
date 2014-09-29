@@ -1,4 +1,4 @@
-// 9 July 2014
+// 29 September 2014
 
 EWD.bootstrap3 = {
   createMenu: function() {
@@ -59,8 +59,10 @@ EWD.bootstrap3 = {
     // targetId = string ID of clicked navbar/footer link (e.g. ewd_Nav/ewd_Footer)
     pageSwap: function(targetId) {
       var targetSuffix = targetId.split('_')[1];
-      if (typeof targetSuffix === 'undefined' || targetSuffix !== 'Nav') {
-        return;
+      if (typeof targetSuffix === 'undefined') {
+        if (targetSuffix !== 'Nav' && targetSuffix !== 'Footer') {
+          return;
+        }
       }
       if ($('#' + targetId).data('link')) {
         var link = $('#' + targetId).data('link');
