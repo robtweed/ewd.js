@@ -5,6 +5,18 @@ var  injectMsg = function(recipients, params) {
       port: 10000
     },
     function() {
+      if (recipients === 'all') {
+        var messageObj = {
+          recipients: 'all',
+          password: "keepThisSecret!",
+          type: "externalMessageTest",
+          message: params.message
+        }
+        var message = JSON.stringify(messageObj);
+        client.write(message);
+        client.destroy();
+        return
+      }
       if (recipients !== 'bySession') {
         var messageObj = {
           recipients: recipients,
@@ -67,5 +79,7 @@ var test3 = function() {
 if (process.argv[2] === '1') test1();
 if (process.argv[2] === '2') test2();
 if (process.argv[2] === '3') test3();
+
+
 
 

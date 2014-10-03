@@ -1,0 +1,21 @@
+<!-- the styling here keeps this hidden when the fragment is loaded -->
+<!-- we only want to show it once the service has done everything it needs to with the page-->
+<div class="container js-profile" style="display:none;"> 
+	<div class="panel panel-default">
+		<div class="panel-heading js-profile-heading">
+			<h1>Patient Profile</h1>
+		</div>
+		<div class="panel-body">
+
+			<ul class="list-group js-profile-dataList">
+
+				<!-- A piece of markup we will use as a template for injecting our profile data into -->
+				<!-- Note the use of classes & naming convention to avoid conflicts & decouple markup from our JS -->
+				<li class="list-group-item js-profile-dataList-template">
+				</li>
+
+			</ul>
+
+		</div>
+	</div>
+</div>

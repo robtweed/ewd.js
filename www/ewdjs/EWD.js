@@ -1,7 +1,7 @@
 var EWD = {
   version: {
-    build: 19,
-    date: '29 September 2014'
+    build: 21,
+    date: '3 October 2014'
   }, 
   trace: false,
   initialised: false,
@@ -19,13 +19,16 @@ var EWD = {
     var tag = document.createElement('div');
     tag.innerHTML = html;
   },
-  getFragment: function(file, targetId, onFragment) {
+  getFragment: function(file, targetId, onFragment, isServiceFragment) {
     var messageObj = {
       type: "EWD.getFragment", 
       params:  {
         file: file,
         targetId: targetId
       }
+    };
+    if (typeof isServiceFragment === 'boolean' && isServiceFragment) {
+      messageObj.params.isServiceFragment = true
     };
     if (onFragment) messageObj.done = onFragment; 
     EWD.sockets.sendMessage(messageObj); 
@@ -47,9 +50,10 @@ var EWD = {
 
     require([options.serviceName], function(module) {
       function invokeOnServiceReady(options) {
-        if (typeof EWD.application.onServiceReady[options.serviceName] === 'function' 
-        &&  typeof options.done === 'undefined') {
-          EWD.application.onServiceReady[options.serviceName]();
+        if (typeof EWD.application.onServiceReady === 'object' &&  typeof options.done === 'undefined') {
+          if (typeof EWD.application.onServiceReady[options.serviceName] === 'function') {
+            EWD.application.onServiceReady[options.serviceName](module);
+          }
         }
         else if (typeof options.done === 'function'){
           options.done(module);
@@ -67,38 +71,64 @@ var EWD = {
       // extend onMessage
       if (typeof module.onMessage === 'object') {
         for (method in module.onMessage) {
+          if (typeof EWD.application.onMessage === 'undefined') {
+            EWD.application.onMessage = {};
+          }
           EWD.application.onMessage[options.nameSpace+'-'+method] = module.onMessage[method];
         }
       }
       // extend onFragment
       if (typeof module.onFragment === 'object') {
         for (method in module.onFragment) {
+          if (typeof EWD.application.onFragment === 'undefined') {
+            EWD.application.onFragment = {};
+          }
           EWD.application.onFragment[method] = module.onFragment[method];
         }
       }
-
       // set correct fragmentName
       var fragmentName = false;
-      if (typeof options.fragmentName === 'string' && options.fragmentName.length > 0) {
-        fragmentName = options.fragmentName;
+      var useServiceDirectory = true;
+      if (typeof options.fragmentName !== 'boolean' && options.fragmentName !== false) {
+        if (typeof options.fragmentName === 'string' && options.fragmentName.length > 0) {
+          fragmentName = options.fragmentName;
+          useServiceDirectory = false;
+        }
+        else if (typeof module.fragmentName === 'string' && module.fragmentName.length > 0) {
+          fragmentName = module.fragmentName;
+        }
+        else if (typeof module.fragmentName === 'boolean' && module.fragmentName === false) {
+          fragmentName = false;
+        }
+        else {
+          //console.log('default fragment')
+          fragmentName = options.serviceName + '.html';
+        }
       }
-      else if (typeof module.fragmentName === 'string' && module.fragmentName.length > 0) {
-        fragmentName = module.fragmentName;
-      }
+
       // fetch fragment if fragmentName is supplied
       if (fragmentName) {
         // clone onFragment to overwrite & extend it with
         if (typeof EWD.application.onFragment[fragmentName] === 'function') {
           var _onFragment = EWD.application.onFragment[fragmentName];
         }
-        EWD.getFragment(fragmentName, options.targetSelector, function(messageObj) {
-          _onFragment(messageObj);
-          invokeServiceInit(options, module);
-          invokeOnServiceReady(options);
-          // restore original onFragment handler 
-          // prevents EWD.application.onFragment[fragmentName] from being continually extended by this
-          EWD.application.onFragment[fragmentName] = _onFragment;
-        });
+        EWD.getFragment(fragmentName, options.targetSelector, function(messageObj, fragmentError) {
+          if (fragmentError) { // revert this handler back if fetching the fragment failed
+            EWD.application.onFragment[fragmentName] = _onFragment;
+          }
+          else {
+            if (typeof _onFragment === 'function'){
+              _onFragment(messageObj);
+            }
+            invokeServiceInit(options, module);
+            invokeOnServiceReady(options);
+            // restore original onFragment handler 
+            // prevents EWD.application.onFragment[fragmentName] from being continually extended by this
+            if (typeof _onFragment === 'function') {
+              EWD.application.onFragment[fragmentName] = _onFragment;
+            }
+          }
+        },useServiceDirectory);
       }
       // no fragment to fetch, just run the init and service callbacks
       else {
@@ -471,6 +501,12 @@ var EWD = {
       }
       // SJT New additions for jQuery selector support for fragment target
       if (obj.type === 'EWD.getFragment') {
+        if (obj.message.error) {
+          console.log('ERROR: target fragment ' + obj.message.file + ' could not be loaded');
+          if (obj.message.isServiceFragment) {
+            EWD.application.onFragment[obj.message.file](obj,true);
+          }
+        }
         if (obj.message.targetId) {
           // check jQuery is loaded, targetId is valid jQuery selector and selector matches 1+ elements 
           if (window.jQuery && $(obj.message.targetId) instanceof jQuery && $(obj.message.targetId).length > 0) { // handle a jquery object
