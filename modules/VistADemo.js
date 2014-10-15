@@ -4,7 +4,7 @@ var crypto = require('crypto');
 // Crypto functions
 
 var encryptCredentials = function(accessCode, verifyCode, key) {
-  var text = 'accessCode=' + accessCode + '&verfiyCode=' + verifyCode;
+  var text = 'accessCode=' + accessCode + '&verifyCode=' + verifyCode;
   var cipher = crypto.createCipher('aes-256-cbc',key)
   var crypted = cipher.update(text,'utf8','hex')
   crypted += cipher.final('hex');
@@ -18,7 +18,7 @@ var decryptCredentials = function(encryptedString, key) {
     dec = decipher.update(encryptedString,'hex','utf8')
     dec += decipher.final('utf8');
     var str = dec.split('accessCode=')[1];
-    var pieces = str.split('&verfiyCode=');
+    var pieces = str.split('&verifyCode=');
     return {
       accessCode: pieces[0],
       verifyCode: pieces[1]
