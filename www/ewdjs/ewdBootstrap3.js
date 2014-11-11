@@ -1,4 +1,4 @@
-// 29 September 2014
+// 11 November 2014
 
 EWD.bootstrap3 = {
   createMenu: function() {
@@ -27,7 +27,7 @@ EWD.bootstrap3 = {
     }
   },
 
-  enableSelect2: function() {
+  enableSelect2: function(authorization) {
     $('#patientSelectionFormBody').css("overflow-y","visible");
     $("#selectedPatient").select2({
       minimumInputLength: 1,
@@ -38,7 +38,8 @@ EWD.bootstrap3 = {
         EWD.sockets.sendMessage({
           type: 'patientQuery',
           params: {
-            prefix: query.term
+            prefix: query.term,
+            authorization: authorization || ''
           }
         });
       }
@@ -236,7 +237,12 @@ EWD.onSocketsReady = function() {
   // select2 handler that fires on each keystroke in the Select Patient panel
 
   if ($('#selectedPatient').length > 0) {
-    EWD.bootstrap3.enableSelect2();
+    if (EWD.application.authorization) {
+      EWD.bootstrap3.enableSelect2(EWD.application.authorization);
+    }
+    else {
+      EWD.bootstrap3.enableSelect2();
+    }
   }
 
   
@@ -271,7 +277,8 @@ EWD.onSocketsReady = function() {
     EWD.sockets.sendMessage({
       type: 'patientSelected',
       params: {
-        patientId: $('#selectedPatient').select2('val')
+        patientId: $('#selectedPatient').select2('val'),
+        authorization: EWD.application.authorization || ''
       }
    });
   });
@@ -312,8 +319,9 @@ EWD.onSocketsReady = function() {
 
   // everything is ready to go:
   // activate login button and the user can start interacting
-
-  if (EWD.application.onStartup) EWD.application.onStartup();
+  if (EWD.application.onStartup) {
+    EWD.application.onStartup();
+  }
 
   if (document.getElementById('loginBtn')) document.getElementById('loginBtn').style.display = '';
 };
