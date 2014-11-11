@@ -1,0 +1,115 @@
+<div class="row" id="mainPageLoaded">
+  <div class="col-md-12">
+    <h1 id="overviewTitle">EWD Federator System Overview</h1>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="col-md-4">
+          <div class="infoPanel table-responsive">
+            <h2 class="infoHeader">Build Details</h2>
+            <div>
+              <table id="buildDetails" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Module</th>
+                    <th>Version/build</th>
+                  </tr>
+                </thead>
+                <tbody id="buildDetailsTableBody">
+                  <tr>
+                    <td>ewd-federator</td>
+                    <td id="buildVersion-federator"></td>
+                  </tr>
+                  <tr>
+                    <td>Node.js</td>
+                    <td id="buildVersion-Node"></td>
+                  </tr>
+                  <tr>
+                    <td>Database Interface</td>
+                    <td id="buildVersion-iface"></td>
+                  </tr>
+                  <tr>
+                    <td>Database</td>
+                    <td id="buildVersion-db"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="infoPanel table-responsive">
+            <h2 class="infoHeader">Master Process</h2>
+            <div>
+              <table id="mainProcess" class="table table-striped">
+                <tbody>
+                  <tr>
+                    <td id="mainProcess-pid"></td>
+                    <td id="mainProcess-btn">
+                      <button class="btn btn-danger pull-right" type="button" id="stopBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Shutdown EWD.js">
+                        <span class="glyphicon glyphicon-remove"></span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <table id="startedInfo" class="table table-striped">
+                <tbody id="startedInfoTableBody">
+                  <tr>
+                    <td>Started</td>
+                    <td id="startedDate"></td>
+                  </tr>
+                  <tr>
+                    <td>Up Time</td>
+                    <td id="uptime"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <table id="masterProcess" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Queue Length</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td id="masterProcess-qLength"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="infoPanel table-responsive">
+            <h2 class="infoHeader">Child Process Pool</h2>
+            <div>
+              <table id="childProcessTable" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>PID</th>
+                    <th>Requests</th>
+                    <th>Available</th>
+                    <th>
+                      <button class="btn btn-success pull-right" type="button" id="cpStartBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start a new Child Process">
+                        <span class="glyphicon glyphicon-off"></span>
+                      </button>    
+                      <button class="btn btn-success pull-left" type="button" id="cpDebugBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start a new Child Process in Debug Mode">
+                        <span class="glyphicon glyphicon-wrench"></span>
+                      </button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

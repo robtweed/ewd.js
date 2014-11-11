@@ -1,0 +1,46 @@
+<div class="modal-dialog">
+  <div id="addServerModalPanel" class="modal-content">
+    <div class="modal-header">
+      <h3 id="ewd-addServerPanel-title">EWD Federator Manager</h3>
+    </div>
+    <div id="addServerPanelBody" class="modal-body">
+      <legend>Federator Instance Details</legend>
+      <div class="form-group">
+        <label for="name">Name: </label>
+        <input type="text" class="form-control focusedInput" id="name" placeholder="Enter a name to give this instance" />
+      </div>
+      <div class="form-group">
+        <label for="host">Host IP/Name: </label>
+        <input type="text" class="form-control" id="host" placeholder="Enter host details" />
+      </div>
+      <div class="form-group">
+        <label for="port">Port: &nbsp;</label>
+        <input type="text" class="form-control" id="port" placeholder="Enter port" />
+      </div>
+      <div>
+        <label>SSL: </label>
+        <div>
+          <label class="radio-inline">
+            <input type="radio" name="ssl" id="ssl1" value="true" checked="checked" /> Yes
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="ssl" id="ssl2" value="false" /> No
+          </label>
+        </div>
+      </div>
+      <br />
+      <div class="form-group">
+        <label for="password">Management Password: &nbsp;</label>
+        <input type="password" class="form-control" id="password" placeholder="Enter Management Password" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" style="display: none" type="button" id="addBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Add Federator Instance">
+        <span class="glyphicon glyphicon-plus"></span>
+      </button>
+      <button class="btn btn-success pull-left" style="display: none" type="button" id="backToSelectBtn" data-toggle="tooltip" data-placement="top" title="" data-original-title="Back">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </button>
+    </div>
+  </div>
+</div>
