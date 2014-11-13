@@ -1,3 +1,33 @@
+/*
+
+ ----------------------------------------------------------------------------
+ | ewdFederatorMgr: EWD Federator Management Utility                        |
+ |                                                                          |
+ | Copyright (c) 2013-14 M/Gateway Developments Ltd,                        |
+ | Reigate, Surrey UK.                                                      |
+ | All rights reserved.                                                     |
+ |                                                                          |
+ | http://www.mgateway.com                                                  |
+ | Email: rtweed@mgateway.com                                               |
+ |                                                                          |
+ |                                                                          |
+ | Licensed under the Apache License, Version 2.0 (the "License");          |
+ | you may not use this file except in compliance with the License.         |
+ | You may obtain a copy of the License at                                  |
+ |                                                                          |
+ |     http://www.apache.org/licenses/LICENSE-2.0                           |
+ |                                                                          |
+ | Unless required by applicable law or agreed to in writing, software      |
+ | distributed under the License is distributed on an "AS IS" BASIS,        |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. |
+ | See the License for the specific language governing permissions and      |
+ |  limitations under the License.                                          |
+ ----------------------------------------------------------------------------
+
+Build 1: 12 November 2014
+
+*/
+
 EWD.sockets.log = true;
 
 EWD.qMax = 0;
@@ -97,6 +127,9 @@ EWD.application = {
     },
     about: {
       cache: true
+    },
+    disconnect: {
+      cache: false
     }
   },
   memoryPolling: false,
@@ -118,6 +151,22 @@ EWD.application = {
       console.log('"about" menu was selected');
     }
     */
+
+    disconnect: function(messageObj) {
+      //$('#disconnect_Container').text('');
+      setTimeout(function() {
+        if (EWD.application.getMemoryEvent) {
+          clearTimeout(EWD.application.getMemoryEvent);
+          delete EWD.application.getMemoryEvent;
+          EWD.application.memoryPolling = false;
+        }
+        toastr.options.target = '#serverPanel';
+        $('#main_Nav').click();
+        $('#main_Container').html('');
+        $('#serverPanel').modal({show: true, backdrop: 'static'});
+      },2000);
+    },
+
   },
 
   onFragment: {
@@ -251,7 +300,8 @@ EWD.application = {
     },
 
     'selectServer.html': function(messageObj) {
-      console.log("selectServer fetched");
+      //console.log("selectServer fetched");
+      toastr.options.target = '#serverPanel';
       var name;
       for (var i = 0; i < EWD.application.servers.length; i++) {
         name = EWD.application.servers[i];
@@ -269,11 +319,13 @@ EWD.application = {
               var error = messageObj.message.error;
               if (messageObj.message.errorText) error = messageObj.message.errorText;
               toastr.error(error);
+              //console.log('error: ' + error);
             }
             else {
               EWD.application.info = messageObj.message.info;
               $('#serverPanel').modal('hide');
               EWD.getFragment('main.html', 'main_Container');
+              //$('#main_Nav').click();
               EWD.application.info.instanceName = $('#federatorName').val(); 
             }
           }
@@ -374,7 +426,8 @@ EWD.application = {
               toastr.warning('This EWD Federator has been stopped');
               setTimeout(function() {
                 if (messageObj.message.info.ok) {
-                  location.reload();
+                  //location.reload();
+                  $('#disconnect_Nav').click();
                 }
               },2000);
             }
@@ -424,12 +477,13 @@ EWD.application = {
         EWD.sockets.sendMessage({
           type: 'getMemory',
           done: function(messageObj) {
-            console.log('*** updating');
+            //console.log('*** updating');
             if (!messageObj.childProcess) {
               $('#master-rss').text(messageObj.memory.rss);
               $('#master-heapTotal').text(messageObj.memory.heapTotal);
               $('#master-heapUsed').text(messageObj.memory.heapUsed);
               $('#masterProcess-qLength').text(messageObj.memory.queueLength);
+              $('#uptime').text(messageObj.memory.upTime);
               EWD.memory.master = messageObj.memory;
               for (var cpPid in messageObj.memory.childProcesses) {
                 $('#cpRequests' + cpPid).text(messageObj.memory.childProcesses[cpPid].requests);                
