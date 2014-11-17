@@ -345,8 +345,14 @@ EWD.application = {
 
     'internals.html': function(messageObj) {
       EWD.sockets.sendMessage({
-        type: "EWD.inspect",
-        //password: EWD.password
+        type: "getInternals",
+        done: function(messageObj) {
+          $('#internals_poolSize').text(messageObj.message.poolSize);
+          $('#internals_params').text(JSON.stringify(messageObj.message.startupParams, null, 2));
+          $('#internals_process').text(JSON.stringify(messageObj.message.process, null, 2));
+          $('#internals_requestsByProcess').text(JSON.stringify(messageObj.message.requestsByProcess, null, 2));
+          $('#internals_queueByPid').text(JSON.stringify(messageObj.message.queueByPid, null, 2));
+        }
       });
       $('#internalsDebugBtn').click(function(e) {
         EWD.sockets.sendMessage({
@@ -367,7 +373,7 @@ EWD.application = {
       $('#startedDate').text(EWD.application.info.started);
       $('#uptime').text(EWD.application.info.uptime);
       $('#overviewTitle').text('  EWD Federator (' + EWD.application.info.instanceName + ') Overview');
-      $('#ewd-navbar-title-other').text($('#ewd-navbar-title-other').text() + ': ' + EWD.application.info.instanceName);
+      $('#ewd-navbar-title-other').text('EWD Federator Manager: ' + EWD.application.info.instanceName);
 
       $('#mainProcess-pid').popover({
         title: "Memory Utilisation",

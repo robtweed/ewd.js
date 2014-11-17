@@ -286,6 +286,19 @@ module.exports = {
       });
     },
 
+    getInternals: function(params, ewd) {
+      var request = {
+        path: '/_mgr/internals',
+        method: 'GET'
+      };
+      restRequest(request, ewd, function(error, response) {
+        ewd.sendWebSocketMsg({
+          type: 'getInternals',
+          message: response
+        });
+      });
+    },
+
     stopFederatorChildProcess: function(params, ewd) {
       var pid = params.pid;
       var request = {
