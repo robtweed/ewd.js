@@ -26,7 +26,7 @@
     "fast-url-parser": ">=1.0.6-0",
     "mime": ">=1.2.11",
     "ewdliteclient": ">=0.4.0",
-    "node-uuid": ">=1.4.2",
+    "node-uuid": ">=1.4.2"
   },
   "licenses": [
     "Apache"
