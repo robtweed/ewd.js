@@ -1,0 +1,28 @@
+<form id="externalPortForm" role="form">
+  <div>
+
+    <div class="form-group">
+      <div class="radio-inline">
+        <label>
+          <input type="radio" name="enableExternalPort" id="externalPort0" value="0" />
+          Disabled
+        </label>
+      </div>
+      <div class="radio-inline">
+        <label>
+          <input type="radio" name="enableExternalPort" id="externalPort1" value="1" />
+          Enabled
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group" id="externalPortNo">
+      <label for="webSockets-externalPort">External Listener Port No: &nbsp;</label>
+      <input type="text" class="form-control" id="webSockets-externalPort" placeholder="External Listener Port No" value=""/>
+    </div>
+
+    <div>
+      <button type="button" class="btn btn-primary pull-left" id="updateExternalPortBtn">Update</button>
+    </div>
+  </div>
+</form>

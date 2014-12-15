@@ -1,7 +1,7 @@
 var EWD = {
   version: {
-    build: 21,
-    date: '3 October 2014'
+    build: 22,
+    date: '28 November 2014'
   }, 
   trace: false,
   initialised: false,
@@ -101,7 +101,7 @@ var EWD = {
           fragmentName = false;
         }
         else {
-          //console.log('default fragment')
+          console.log('default fragment')
           fragmentName = options.serviceName + '.html';
         }
       }
@@ -312,10 +312,10 @@ var EWD = {
 
     socket.on('message', function(obj){
       if (EWD.sockets.log) {
-        if (obj.type !== 'EWD.registered') {
+        if (obj.type !== 'EWD.registered' && obj.type !== 'consoleText') {
           console.log("onMessage: " + JSON.stringify(obj));
         }
-        else {
+        else if(obj.type !== 'EWD.registered') {
           console.log('Registered successfully');
         }
       }
@@ -503,6 +503,7 @@ var EWD = {
       if (obj.type === 'EWD.getFragment') {
         if (obj.message.error) {
           console.log('ERROR: target fragment ' + obj.message.file + ' could not be loaded');
+          console.log(JSON.stringify(obj));
           if (obj.message.isServiceFragment) {
             EWD.application.onFragment[obj.message.file](obj,true);
           }

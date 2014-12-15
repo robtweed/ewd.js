@@ -1,21 +1,31 @@
 <div class="row" id="internalsPageLoaded">
   <div class="col-md-12">
-    <h1>Internal Memory Data Structures
-      <button type="button" class="btn btn-primary pull-right" id="internalsDebugBtn">Change Debugging Ports</button>
-    </h1>
-    <h4>ewd.socketClient</h4>
-    <pre id="internals_socketClient"></pre>
-    <h4>ewd.socketClientByToken</h4>
-    <pre id="internals_socketClientByToken"></pre>
-    <h4>ewd.poolSize</h4>
-    <pre id="internals_poolSize"></pre>
-    <h4>Startup params (current runtime values)</h4>
-    <pre id="internals_params"></pre>
-    <h4>ewd.process</h4>
-    <pre id="internals_process"></pre>
-    <h4>ewd.requestsByProcess</h4>
-    <pre id="internals_requestsByProcess"></pre>
-    <h4>ewd.queueByPid</h4>
-    <pre id="internals_queueByPid"></pre>
+    <div class="row">
+      <h1>Internal Memory Data Structures</h1>
+      <div class="btn-toolbar pull-right">
+        <button type="button" class="btn btn-primary" id="internalsNameBtn">System Name</button>
+        <button type="button" class="btn btn-primary" id="internalsDebugBtn">Debugging Ports</button>
+        <button type="button" class="btn btn-primary" id="childProcessBtn">Child Processes</button>
+        <button type="button" class="btn btn-primary" id="webSocketsBtn">WebSockets</button>
+        <button type="button" class="btn btn-primary" id="externalPortBtn">External Port</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <h4>ewd.socketClient</h4>
+      <pre id="internals_socketClient"></pre>
+      <h4>ewd.socketClientByToken</h4>
+      <pre id="internals_socketClientByToken"></pre>
+      <h4>ewd.childProcess.poolSize</h4>
+      <pre id="internals_poolSize"></pre>
+      <h4>Startup params (current runtime values)</h4>
+      <pre id="internals_params"></pre>
+      <h4>ewd.process</h4>
+      <pre id="internals_process"></pre>
+      <h4>ewd.requestsByProcess</h4>
+      <pre id="internals_requestsByProcess"></pre>
+      <h4>ewd.queueByPid</h4>
+      <pre id="internals_queueByPid"></pre>
+    </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-// 11 November 2014
+// 5 December 2014
 
 EWD.bootstrap3 = {
   createMenu: function() {
@@ -39,7 +39,7 @@ EWD.bootstrap3 = {
           type: 'patientQuery',
           params: {
             prefix: query.term,
-            authorization: authorization || ''
+            authorization: authorization
           }
         });
       }
@@ -70,8 +70,11 @@ EWD.bootstrap3 = {
         window.open(link);
         return;
       }
+      //console.log('pageSwap - targetId = ' + targetId);
       var current = EWD.bootstrap3.nav.getCurrentPage();
+      //console.log('current: ' + current);
       var target = targetId.split('_')[0];
+      //console.log('target: ' + target);
       if (target !== current) {
         var currentRef = '#' + current + '_Container';
         var targetRef = '#' + target + '_Container';        
@@ -79,8 +82,8 @@ EWD.bootstrap3 = {
           $('#' + target + '_Container').on('shown.bs.collapse', function() {
             EWD.bootstrap3.nav.enable();
             $('#' + target + '_Container').unbind();
-            if (EWD.application.onAfterPageSwap && EWD.application.onAfterPageSwap[target]) EWD.application.onAfterPageSwap[target]();
-            if (EWD.application.onAfterAnyPageSwap && EWD.application.onAfterAnyPageSwap) EWD.application.onAfterAnyPageSwap();
+            if (EWD.application.onAfterPageSwap && typeof EWD.application.onAfterPageSwap[target] === 'function') EWD.application.onAfterPageSwap[target](current,target);
+            if (typeof EWD.application.onAfterAnyPageSwap === 'function') EWD.application.onAfterAnyPageSwap(current,target);
           });
           $('#' + target + '_Container').collapse('show');
           $('#' + current + '_Container').unbind();
@@ -105,7 +108,9 @@ EWD.bootstrap3 = {
           });
         }
         if (params.cache) {
-          if ($('#' + params.fragmentOuterId).length === 0) loadFragment(params);
+          if ($('#' + params.fragmentOuterId).length === 0) {
+            loadFragment(params);
+          }
         }
         else {
           loadFragment(params);
@@ -237,12 +242,7 @@ EWD.onSocketsReady = function() {
   // select2 handler that fires on each keystroke in the Select Patient panel
 
   if ($('#selectedPatient').length > 0) {
-    if (EWD.application.authorization) {
-      EWD.bootstrap3.enableSelect2(EWD.application.authorization);
-    }
-    else {
-      EWD.bootstrap3.enableSelect2();
-    }
+    EWD.bootstrap3.enableSelect2(EWD.application.authorization);
   }
 
   
@@ -278,7 +278,7 @@ EWD.onSocketsReady = function() {
       type: 'patientSelected',
       params: {
         patientId: $('#selectedPatient').select2('val'),
-        authorization: EWD.application.authorization || ''
+        authorization: EWD.application.authorization
       }
    });
   });
@@ -319,9 +319,8 @@ EWD.onSocketsReady = function() {
 
   // everything is ready to go:
   // activate login button and the user can start interacting
-  if (EWD.application.onStartup) {
-    EWD.application.onStartup();
-  }
+
+  if (EWD.application.onStartup) EWD.application.onStartup();
 
   if (document.getElementById('loginBtn')) document.getElementById('loginBtn').style.display = '';
 };

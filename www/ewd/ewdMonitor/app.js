@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 9: 29 August 2014
+Build 10: 15 December 2014
 
 */
 
@@ -32,13 +32,14 @@ var isInteger = function(n) {
   return $.isNumeric(n) && parseInt(n, 10) > 0;
 };
 
+EWD.sockets.log = true;
+
 EWD.application = {
   name: 'ewdMonitor',
   timeout: 3600,
-  login: true,
+  login: false,
   labels: {
     'ewd-title': 'EWD.js Monitor',
-    'ewd-loginPanel-title': 'EWD.js Monitor',
     'ewd-navbar-title-phone': 'EWD.js',
     'ewd-navbar-title-other': 'EWD.js Monitor',
     'ewd-menu-title': 'Menu'
@@ -59,7 +60,7 @@ EWD.application = {
     importer: {
       cache: true
     },
-    wsMgr: {
+    security: {
       cache: true
     },
     about: {
@@ -71,6 +72,8 @@ EWD.application = {
   },
 
   onStartup: function() {
+
+    $('#loginPanel').modal({show: true, backdrop: 'static'});
 
     EWD.bootstrap3.nav.enable();
 
@@ -121,12 +124,25 @@ EWD.application = {
       }
     };
 
+
+    EWD.enableNotAvailable = function() {
+      $('.cpNotAvailable').unbind();
+      $('.cpNotAvailable').click(function(e) {
+        var pid = e.target.id.split('cpAvailable')[1];
+        EWD.sockets.sendMessage({
+          type: 'EWD.toggleAvailability',
+          //password: EWD.password,
+          pid: pid
+        });
+      });
+    };
+
     EWD.addChildProcessToTable = function(pid, debug) {
       var html = '';
       html = html + '<tr class="table" id="cpRow' + pid + '">';
       html = html + '<td class="cpPid" id="cpPid' + pid + '">' + pid + '</td>';
       html = html + '<td id="cpRequests' + pid + '">0</td>';
-      html = html + '<td id="cpAvailable' + pid + '">true</td>';
+      html = html + '<td class="cpAvailable" id="cpAvailable' + pid + '">true</td>';
       html = html + '<td>'
       if (debug) {
         html = html + '<button class="btn btn-info pull-left cpNodeInspector" type="button" id="cpNodeInspectorBtn' + debug.port + '_' + debug.web_port + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start Debugging (web_port=' + debug.web_port + ')"><span class="glyphicon glyphicon-wrench"></span></button>';
@@ -140,6 +156,98 @@ EWD.application = {
       };
       EWD.memory.plot['cpPid' + pid] = [];
       return html;
+    };
+
+    EWD.clearList = function(listId) {
+      var length = $(listId).children().length;
+      if (length > 1) {
+        for (var i = 1; i < length; i++) {
+          $(listId).children()[1].remove();
+        }
+      }
+    };
+
+    EWD.getUsers = function() {
+      var header = $('#userListHeader');
+      header.detach();
+      $('#userList').empty();
+      $('#userList').html(header);
+      EWD.sockets.sendMessage({
+        type: "getUsers", 
+        done: function(messageObj) {
+          if (messageObj.message.length === 0) {
+            $('#userList').hide();
+            $('#users_EditBtn').hide();
+            $('#users_DeleteBtn').hide();
+            return;
+          }
+          $('#userList').show();
+          $('#users_EditBtn').show();
+          $('#users_DeleteBtn').show();
+          var html = "<li class='list-group-item' id='newuser' data-userlist></li>"
+          var key;
+          var apps = [];
+          var username;
+          EWD.clearList("#userList");
+          EWD.application.selectedUsername = '';
+          EWD.application.selectedUser = '';
+          for (var i = 0; i < messageObj.message.length; i++) {
+            username = messageObj.message[i].username;
+            $("#userList").append(html);
+            $("#newuser").text(username);
+            $("#newuser").attr("id", "userList_" + username);
+            $("#userList_" + username).on('click', function(e) {
+              if (EWD.application.selectedUser !== '' && $(e.target) !== EWD.application.selectedUser) {
+                $(EWD.application.selectedUser).removeClass('clicked');
+                $(EWD.application.selectedUser).css({"background-color": ""});
+              }
+              EWD.application.selectedUsername = e.target.id.split('userList_')[1];
+              EWD.application.selectedUser = $(e.target);
+              $(e.target).addClass('clicked');
+              $(e.target).css({"background-color": "#9f9f9f"});
+            });
+            $("#userList_" + username).on('mouseover', EWD.listOver);
+            $("#userList_" + username).on('mouseout', EWD.listOut);
+          }
+        }
+      });
+    };
+
+    EWD.listOver = function() {
+      $(this).css({"background-color": "#9f9f9f", "cursor":"pointer"});
+    };
+
+    EWD.listOut = function() {
+      if (!$(this).hasClass('clicked')) $(this).css({"background-color": ""});
+    };
+
+    EWD.application.deleteUser = function() {
+      var password = $('#confirm_password').val();
+      if (password === '') {
+        toastr.error('You must enter the EWD.js Management Password');
+        return;
+      }
+      EWD.sockets.sendMessage({
+        type: 'deleteUser',
+        params: {
+          username: EWD.application.selectedUsername,
+          password: password
+        },
+        done: function(messageObj) {
+          if (messageObj.error) {
+            toastr.error(messageObj.error);
+            return;
+          }
+          if (messageObj.message.error) {
+            toastr.error(messageObj.message.error);
+            return;
+          }
+          if (messageObj.message.ok) {
+            $('#confirmPanel').modal('hide');
+            EWD.getUsers();
+          }
+        }
+      });
     };
 
     EWD.enablePopovers = function() {
@@ -174,7 +282,7 @@ EWD.application = {
           var pid = id.split('cpStopBtn')[1];
           EWD.sockets.sendMessage({
             type: "stopChildProcess", 
-            password: EWD.password,
+            //password: EWD.password,
             pid: pid
           });
           /*
@@ -244,6 +352,7 @@ EWD.application = {
       $('#confirmPanelHeading').text('Are you sure you want to delete this record:');
       $('#confirmPanelQuestion').text(globalName + JSON.stringify(subscripts));
       $('#confirmPanelOKBtn').text('Yes');
+      $('#confirmPassword').hide();
       $('#confirmPanelOKBtn').attr('data-globalName', globalName);
       $('#confirmPanelOKBtn').attr('data-subscripts', JSON.stringify(subscripts));
       $('#confirmPanelOKBtn').attr('data-event-type', 'deleteGlobalNode');
@@ -356,6 +465,30 @@ EWD.application = {
       },300);
     };
 
+    EWD.pollTail = function() {
+      EWD.pollTailEvent = setTimeout(function() {
+        EWD.sockets.sendMessage({
+          type: "getLogTail",
+          done: function(messageObj) {
+            var str = messageObj.data;
+            $('#consoleText').append(str);
+            var preLength = $("#consoleText").text().split('\n').length;
+            if (preLength > (EWD.maxConsoleLength || 1000)) {
+              var text = $('#consoleText').text();
+              var arr = text.split('\n');
+              var diff = preLength - EWD.maxConsoleLength;
+              var arr2 = arr.splice(diff);
+              text = arr2.join('\n');
+              $('#consoleText').text(text);
+            }
+            $("#consoleText").animate({ scrollTop: $('#consoleText')[0].scrollHeight}, 5);
+          }
+        });
+        EWD.pollTail();
+      },5000);
+    };
+
+    EWD.consoleInitialised = false;
 
     // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();
@@ -374,11 +507,12 @@ EWD.application = {
       }
     });
 
-
     $('#stopBtn').click(function(e) {
       $('#confirmPanelHeading').text('Attention!');
       $('#confirmPanelQuestion').text('Are you sure you really want to shut down the EWD.js process?');
       $('#confirmPanelOKBtn').text('Yes');
+      $('#confirm_password').val('');
+      $('#confirmPassword').show();
       $('#confirmPanelOKBtn').attr('data-event-type', 'shutdown');
       $('#confirmPanel').modal('show');
       //EWD.stopBtn = 'shutdown';
@@ -388,12 +522,18 @@ EWD.application = {
       var eventType = $('#confirmPanelOKBtn').attr('data-event-type');
       if (eventType === 'shutdown') {
         $('#confirmPanel').modal('hide');
+        var password = $('#confirm_password').val();
+        if (password === '') {
+          toastr.error('You must enter the EWD.js Management Password');
+          return;
+        }
         EWD.sockets.sendMessage({
           type: "EWD.exit", 
-          password: EWD.password
+          password: password
         });
-        toastr.clear();
-        toastr.warning('EWD.js has been stopped');
+      }
+      if (eventType === 'deleteUser') {
+        EWD.application.deleteUser();
       }
       if (eventType === 'deleteGlobalNode') {
         var globalName = $('#confirmPanelOKBtn').attr('data-globalName');
@@ -430,7 +570,7 @@ EWD.application = {
       EWD.sockets.sendMessage({
         type: "EWD.workerProcess", 
         action:  'add', 
-        password: EWD.password,
+        //password: EWD.password,
         debug: false
       });
     });
@@ -439,8 +579,28 @@ EWD.application = {
       EWD.sockets.sendMessage({
         type: "EWD.workerProcess", 
         action:  'add', 
-        password: EWD.password,
+        //password: EWD.password,
         debug: true
+      });
+    });
+
+    $('#tailBtn').click(function(e) {
+      EWD.sockets.sendMessage({
+        type: "getLogTail",
+        done: function(messageObj) {
+          var str = messageObj.data;
+          $('#consoleText').append(str);
+          var preLength = $("#consoleText").text().split('\n').length;
+          if (preLength > (EWD.maxConsoleLength || 1000)) {
+            var text = $('#consoleText').text();
+            var arr = text.split('\n');
+            var diff = preLength - EWD.maxConsoleLength;
+            var arr2 = arr.splice(diff);
+            text = arr2.join('\n');
+            $('#consoleText').text(text);
+          }
+          $("#consoleText").animate({ scrollTop: $('#consoleText')[0].scrollHeight}, 5);
+        }
       });
     });
 
@@ -480,26 +640,99 @@ EWD.application = {
 
     EWD.keepAlive();
 
+    EWD.activateLoginPanel = function(fullLogin) {
+      $('#ewd-loginPanel-title').text('EWD.js Monitor');
+
+      document.getElementById('username').focus();
+
+      $('#loginPanelBody').keydown(function(event){
+        if (event.keyCode === 13) {
+          document.getElementById('loginBtn').click();
+        }
+      });
+
+      $('#loginBtn').click(function(event) {
+        event.preventDefault(); // prevent default bootstrap behavior
+        var password = '';
+        if (fullLogin) password = $('#password').val();
+        EWD.sockets.submitForm({
+          fields: {
+            username: $('#username').val(),
+            password: password
+          },
+          messageType: 'EWD.form.login',
+          alertTitle: 'Login Error',
+          toastr: {
+            target: 'loginPanel'
+          },
+          done: function(messageObj) {
+            if(messageObj.ok) {
+              $('#loginPanel').modal('hide');
+              EWD.application.loggedIn = true;
+            }
+          }
+        }); 
+      });
+
+      $('#loginBtn').show();
+
+    };
+
+    EWD.sockets.sendMessage({
+      type: 'getLoginType',
+      done: function(messageObj) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: messageObj.message.file,
+            targetId: 'loginPanel'
+          }
+        });
+      }
+    });
+
   },
 
   onPageSwap: {
 
     console: function() {
-      $('.console').height($(window).height() - 200);
-      //console.log("**** height: " + $('.console').height());
-      setTimeout(function() {
-        $("#consoleText").animate({ scrollTop: $('#consoleText')[0].scrollHeight}, 5);
-     }, 3000);
-     $(window).resize(function() {
-       $('.console').height($(window).height() - 200);
-     });
+      $('#console-file').text(EWD.application.logFile);
+      if (!EWD.consoleInitialised) {
+        $('.console').height($(window).height() - 240);
+        setTimeout(function() {
+          $("#consoleText").animate({ scrollTop: $('#consoleText')[0].scrollHeight}, 5);
+        }, 3000);
+        $(window).resize(function() {
+          $('.console').height($(window).height() - 240);
+        });
+        EWD.consoleInitialised = true;
+        EWD.application.onAfterAnyPageSwap = function(container) {
+          console.log('**** changed from ' + container);
+          if (container === 'console') {
+            console.log('Console panel collapsed!');
+            clearTimeout(EWD.pollTailEvent);
+          }
+        };
+        EWD.sockets.sendMessage({
+          type: 'startConsole',
+          done: function(messageObj) {
+            EWD.pollTail();
+          }
+        });
+      }
+      else {
+        EWD.pollTail();
+      }
+
+
     },
 
     db: function() {
       if (EWD.targetIdExists('dbPageLoaded')) {
         $('.fuelux').remove();
         EWD.sockets.sendMessage({
-          type: 'getGlobals'
+          type: 'getGlobals',
+          //password: EWD.password
         });
       }
     }
@@ -508,7 +741,18 @@ EWD.application = {
   onFragment: {
     // injected fragments
 
+    'login.html': function(messageObj) {
+      EWD.activateLoginPanel(true);
+    },
+
+    'initialLogin.html': function(messageObj) {
+      EWD.activateLoginPanel(false);
+    },
+
     'logout.html': function(messageObj) {
+      $('#logout-restartBtn').click(function(e) {
+        location.reload();
+      });
       EWD.sockets.sendMessage({
         type: 'EWD.logout'
       });
@@ -529,7 +773,7 @@ EWD.application = {
             type: 'EWD.setParameter', 
             name: 'monitorLevel', 
             value: level,
-	     password: EWD.password
+	     //password: EWD.password
         });
         EWD.application.traceLevel = level;
         toastr.clear();
@@ -537,26 +781,405 @@ EWD.application = {
       });
     },
 
-    'mgrPassword.html': function(messageObj) {
-      $('#InfoPanelTitle').text('Management Password Reset');
-      $('#InfoPanelHeading').text('');
-      $('#InfoPanel').modal('show');
-      $('#mgrPassword').val(EWD.password);
+    'security.html': function(messageObj) {
 
-      $("#updateMgrPasswordBtn").click(function(){
-        var newPassword = $('#mgrPassword').val();
-        if (newPassword === '') {
-          toastr.error('You must enter a password value');
-        }
-        else {
-          EWD.sockets.sendMessage({
-            type: 'EWD.resetPassword', 
-            value: newPassword,
-            password: EWD.password
+      EWD.sockets.sendMessage({
+        type: "EWD.getFragment", 
+        params:  {
+          file: 'users.html',
+          targetId: 'ewdMonitorUsers'
+        },
+        done: function(messageObj) {
+          $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            var page = $(e.target).attr('data-header');
+            if (!EWD.targetIdExists(page + 'PageLoaded')) {
+              var target = $(e.target).attr('aria-controls');
+              EWD.sockets.sendMessage({
+                type: "EWD.getFragment", 
+                params:  {
+                  file: page + '.html',
+                  targetId: target
+                }
+              });
+            }
+          });
+          EWD.getUsers();
+          $('#users_AddBtn').on('click', function(e) {
+            $('#addUsersPanel').show();
+            $('#manageUsersPanel').hide();
+          });
+          $('#users_BackBtn').on('click', function(e) {
+            $('#addUsersPanel').hide();
+            $('#manageUsersPanel').show();
+          });
+          $('#users_DeleteBtn').on('click', function(e) {
+            $('#confirmPanelHeading').text('Attention!');
+            $('#confirmPanelQuestion').text('Are you sure you really want to delete this ewdMonitor user?');
+            $('#confirmPanelOKBtn').text('Yes');
+            $('#confirm_password').val('');
+            $('#confirmPassword').show();
+            $('#confirmPanelOKBtn').attr('data-event-type', 'deleteUser');
+            $('#confirmPanel').modal('show');
+          });
+          $('#users_EditBackBtn').on('click', function(e) {
+            $('#editUsersPanel').hide();
+            $('#manageUsersPanel').show();
+          });
+          $('#users_EditSaveBtn').on('click', function(e) {
+            var password = $("#users_edit_password").val();
+            if (password === '') {
+              toastr.error('You did not enter a new password');
+              return;
+            }
+            var mgtPassword = $("#users_edit_mgtPassword").val();
+            if (mgtPassword === '') {
+              toastr.error('You must enter the EWD.js Management password');
+              return;
+            }
+            EWD.sockets.sendMessage({
+              type: 'changeUserPassword',
+              params: {
+                username: EWD.application.selectedUsername,
+                password: password,
+                mgtPassword: mgtPassword
+              },
+              done: function(messageObj) {
+                if (messageObj.message.error) {
+                  toastr.error(messageObj.message.error);
+                  return;
+                }
+                if (messageObj.message.ok) {
+                  $('#editUsersPanel').hide();
+                  $('#manageUsersPanel').show();
+                }
+              }
+            });
+          });
+          $('#users_EditBtn').on('click', function(e) {
+            if (EWD.application.selectedUsername !== '') {
+              $('#manageUsersPanel').hide();
+              $('#editUsersPanel').show();
+              $('#users_edit_username').val(EWD.application.selectedUsername);
+            }
+          });
+          $('#users_SaveBtn').on('click', function(e) {
+            var mgtPassword = $("#users_mgtPassword").val();
+            if (mgtPassword === '') {
+              toastr.error('You must enter the EWD.js Management Password');
+              return;
+            }
+            var username = $("#users_username").val();
+            if (username === '') {
+              toastr.error('You must enter a username');
+              return;
+            }
+            var password = $("#users_password").val();
+            if (password === '') {
+              toastr.error('You must enter a password');
+              return;
+            }
+            EWD.sockets.sendMessage({
+              type: 'addUser',
+              params: {
+                username: username,
+                password: password,
+                mgtPassword: mgtPassword
+              },
+              done: function(messageObj) {
+                if (messageObj.message.error) {
+                  toastr.error(messageObj.message.error);
+                  return;
+                }
+                if (messageObj.message.ok) {
+                  $('#addUsersPanel').hide();
+                  $('#manageUsersPanel').show();
+                  EWD.getUsers();
+                }
+              }
+            });
           });
         }
       });
+    },
 
+    'wsAuth.html': function(messageObj) {
+      EWD.sockets.sendMessage({
+        type: 'EWD.getWSAuthStatus',
+        done: function(messageObj) {
+          if (messageObj.message) {
+            $('#wsAuth1').prop('checked', true);
+          }
+          else {
+            $('#wsAuth0').prop('checked', true);
+          }
+        }
+      });
+      $('#wsAuthBtn').click(function(){
+        EWD.sockets.sendMessage({
+          type: 'EWD.setWSAuthStatus',
+          params: {
+            status: $('input[name=wsAuth]:checked', '#wsAuthForm').val()
+          },
+          done: function(messageObj) {
+            toastr.success('Web Service Authorization has been reset to ' + messageObj.ok);
+          }
+        });
+      });
+    },
+
+    'mgtAccess.html': function(messageObj) {
+      EWD.sockets.sendMessage({
+        type: 'EWD.getHTTPAccess',
+        done: function(messageObj) {
+          if (messageObj.message) {
+            $('#httpAccess1').prop('checked', true);
+          }
+          else {
+            $('#httpAccess0').prop('checked', true);
+          }
+        }
+      });
+      $('#mgtAccessBtn').click(function(){
+        EWD.sockets.sendMessage({
+          type: 'EWD.setHTTPAccess',
+          params: {
+            status: $('input[name=httpAccess]:checked', '#mgtAccessForm').val()
+          },
+          done: function(messageObj) {
+            toastr.success('EWD.js management over HTTP/Web Services enabled:' + messageObj.ok);
+          }
+        });
+      });
+    },
+
+    'mgrPassword.html': function(messageObj) {
+      $("#updateMgrPasswordBtn").click(function(){
+        var oldPassword = $('#mgrCurrentPassword').val();
+        if (oldPassword === '') {
+          toastr.error('You must enter the current Management password');
+          return;
+        }
+        var newPassword = $('#mgrNewPassword').val();
+        if (newPassword === '') {
+          toastr.error('You did not enter a new password value');
+          return;
+        }       
+        EWD.sockets.sendMessage({
+          type: 'EWD.resetPassword',
+          currentPassword: oldPassword, 
+          newPassword: newPassword,
+          done: function(messageObj) {
+            if (!messageObj.error) {
+              toastr.success('Management password has been changed until EWD.js is restarted');
+            }
+            else {
+              toastr.error(messageObj.error);
+            }
+          }
+        });
+      });
+    },
+
+    'nameForm.html': function(messageObj) {
+      $('#InfoPanelTitle').text('EWD.js System Name');
+      $('#InfoPanelHeading').text('');
+      $('#InfoPanel').modal('show');
+      EWD.sockets.sendMessage({
+        type: 'EWD.getSystemName',
+        //password: EWD.password,
+        done: function(messageObj) {
+          $('#internals-name').val(messageObj.message.name);
+        }
+      });
+      $('#updateNameBtn').unbind();
+      $('#updateNameBtn').click(function(e) {
+        var name = $('#internals-name').val();
+        if (name === '') {
+          toastr.error('You must define a name');
+          return;
+        }
+        $('#ewd-system-name').text('Overview: ' + name); 
+        $('#ewd-navbar-title-phone').text(name); 
+        $('#ewd-navbar-title-other').text(name); 
+        EWD.sockets.sendMessage({
+          type: 'EWD.setSystemName',
+          //password: EWD.password,
+          params: {
+            name: name,
+          },
+          done: function(messageObj) {
+            if (messageObj.error) {
+              toastr.error(messageObj.error);
+              return;
+            }
+            if (messageObj.ok) {
+              $('#InfoPanel').modal('hide');
+              $('#internals_Nav').click();
+            }
+          }
+        });
+      });
+    },
+
+    'childProcessForm.html': function(messageObj) {
+      $('#InfoPanelTitle').text('Child Process Settings (ewd.childProcess)');
+      $('#InfoPanelHeading').text('');
+      $('#InfoPanel').modal('show');
+      EWD.sockets.sendMessage({
+        type: 'EWD.getChildProcessSettings',
+        //password: EWD.password,
+        done: function(messageObj) {
+          if (messageObj.message.auto) {
+            $('#childProcessAuto1').prop('checked', true);
+          }
+          else {
+            $('#childProcessAuto0').prop('checked', true);
+          }
+          $('#childProcess-maximum').val(messageObj.message.maximum);
+          $('#childProcess-idleLimit').val(messageObj.message.idleLimit / 1000);
+          $('#childProcess-unavailableLimit').val(messageObj.message.unavailableLimit / 1000);
+        }
+      });
+      $('#updateParametersBtn').unbind();
+      $('#updateParametersBtn').click(function(e) {
+        var max = $('#childProcess-maximum').val();
+        if (!$.isNumeric(max) || max < 1) {
+          toastr.error('Invalid maximum value: must be 1 or greater');
+          return;
+        }
+        max = Math.floor(max);
+        $('#childProcess-maximum').val(max);
+        var idle = $('#childProcess-idleLimit').val();
+        if (!$.isNumeric(idle) || idle < 30) {
+          toastr.error('Invalid Idle Time value: must be 30 or greater');
+          return;
+        }
+        var unavail = $('#childProcess-unavailableLimit').val();
+        if (!$.isNumeric(unavail) || unavail < 30) {
+          toastr.error('Invalid Unavailable Time value: must be 30 or greater');
+          return;
+        }
+        EWD.sockets.sendMessage({
+          type: 'EWD.setChildProcessSettings',
+          //password: EWD.password,
+          params: {
+            auto: $('input[name=childProcessAuto]:checked', '#childProcessForm').val(),
+            maximum: max,
+            idleLimit: Math.floor(idle * 1000),
+            unavailableLimit: Math.floor(unavail * 1000),
+          },
+          done: function(messageObj) {
+            if (messageObj.error) {
+              toastr.error(messageObj.error);
+              return;
+            }
+            if (messageObj.ok) {
+              $('#InfoPanel').modal('hide');
+              $('#internals_Nav').click();
+            }
+          }
+        });
+      });
+    },
+
+    'webSocketsForm.html': function(messageObj) {
+      $('#InfoPanelTitle').text('WebSockets Settings (ewd.webSockets)');
+      $('#InfoPanelHeading').text('');
+      $('#InfoPanel').modal('show');
+      EWD.sockets.sendMessage({
+        type: 'EWD.getWebSocketSettings',
+        //password: EWD.password,
+        done: function(messageObj) {
+          $('#webSockets-maxDisconnectTime').val(messageObj.message.maxDisconnectTime / 1000);
+        }
+      });
+      $('#updateWebSocketsBtn').unbind();
+      $('#updateWebSocketsBtn').click(function(e) {
+        var maxDisconnectTime = $('#webSockets-maxDisconnectTime').val();
+        if (!$.isNumeric(maxDisconnectTime) || maxDisconnectTime < 600) {
+          toastr.error('Invalid Disconnect Time value: must be 600 or greater');
+          return;
+        }
+        EWD.sockets.sendMessage({
+          type: 'EWD.setWebSocketSettings',
+          //password: EWD.password,
+          params: {
+            maxDisconnectTime: Math.floor(maxDisconnectTime * 1000),
+          },
+          done: function(messageObj) {
+            if (messageObj.error) {
+              toastr.error(messageObj.error);
+              return;
+            }
+            if (messageObj.ok) {
+              $('#InfoPanel').modal('hide');
+              $('#internals_Nav').click();
+            }
+          }
+        });
+      });
+    },
+
+    'externalPortForm.html': function(messageObj) {
+      $('#InfoPanelTitle').text('External Port Settings (ewd.webSockets)');
+      $('#InfoPanelHeading').text('');
+      $('#InfoPanel').modal('show');
+
+      $(document).on('change', 'input:radio[id="externalPort0"]', function (event) {
+        $('#externalPortNo').hide();        
+      });
+
+      $(document).on('change', 'input:radio[id="externalPort1"]', function (event) {
+        $('#externalPortNo').show();        
+      });
+
+      EWD.sockets.sendMessage({
+        type: 'EWD.getWebSocketSettings',
+        //password: EWD.password,
+        done: function(messageObj) {
+          if (messageObj.message.externalListenerPort) {
+            $('#externalPortNo').show();
+            $('#externalPort1').prop('checked', true);
+            $('#webSockets-externalPort').val(messageObj.message.externalListenerPort);
+          }
+          else{
+            $('#externalPortNo').hide();
+            $('#externalPort0').prop('checked', true);
+          }
+        }
+      });
+      $('#updateExternalPortBtn').unbind();
+      $('#updateExternalPortBtn').click(function(e) {
+        var status = $('input[name=enableExternalPort]:checked', '#externalPortForm').val();
+        var port;
+        if (status === '0') {
+          port = false;
+        }
+        else {
+          port = $('#webSockets-externalPort').val();
+          if (!$.isNumeric(port) || port < 1 || port > 65535) {
+            toastr.error('Invalid Port value');
+            return;
+          }
+        }
+        EWD.sockets.sendMessage({
+          type: 'EWD.setExternalPortSettings',
+          //password: EWD.password,
+          params: {
+            externalListenerPort: port,
+          },
+          done: function(messageObj) {
+            if (messageObj.error) {
+              toastr.error(messageObj.error);
+              return;
+            }
+            if (messageObj.ok) {
+              $('#InfoPanel').modal('hide');
+              $('#internals_Nav').click();
+            }
+          }
+        });
+      });
     },
 
     'debugForm.html': function(messageObj) {
@@ -565,7 +1188,7 @@ EWD.application = {
       $('#InfoPanel').modal('show');
       EWD.sockets.sendMessage({
         type: 'EWD.getDebugPorts',
-        password: EWD.password
+        //password: EWD.password
       });
 
       $("#updateDebugBtn").click(function(){
@@ -591,19 +1214,20 @@ EWD.application = {
           type: 'EWD.changeDebugPorts', 
           child_port: childPort,
           web_port: webPort,
-          password: EWD.password
+          //password: EWD.password
         });
       });
 
     },
 
     'monDest.html': function(messageObj) {
-      $('#InfoPanelTitle').text('Monitoring Destination');
+      $('#InfoPanelTitle').text('EWD.js Log File');
       $('#InfoPanelHeading').text('');
       $('#InfoPanel').modal('show');
-      $('#monDest' + EWD.application.logTo).prop('checked', true);
+      //$('#monDest' + EWD.application.logTo).prop('checked', true);
       $('#monDestFileName').val(EWD.application.logFile);
-      if (EWD.application.logTo === 'console') $('#monDestFileName').prop("disabled", true);
+      //if (EWD.application.logTo === 'console') $('#monDestFileName').prop("disabled", true);
+      /*
       $("input[name=monDest]").click(function(){
         var dest = $('input[name=monDest]:checked', '#monDestForm').val();
         if (dest === 'console') {
@@ -616,25 +1240,26 @@ EWD.application = {
             type: 'EWD.setParameter', 
             name: 'logTo', 
             value: dest,
-	     password: EWD.password
+	     //password: EWD.password
         });
         EWD.application.logTo = dest;
         toastr.clear();
         toastr.success('Monitoring destination reset to ' + dest);
       });
-      $('#monDestFileName').focusout(function() {
+      */
+      $('#monDestBtn').on('click', function() {
         var filename = $('#monDestFileName').val();
         if (filename !== EWD.application.logFile) {
           EWD.sockets.sendMessage({
             type: 'EWD.setParameter',
             name: 'changeLogFile', 
-            value: filename, 
-            password: EWD.password
+            value: filename
           });
           EWD.application.logFile = filename;
-          toastr.clear();
+          $('#console-file').text(filename);
           toastr.success('Monitoring file reset to ' + filename);
         }
+        $('#InfoPanel').modal('hide');
       });
     },
 
@@ -736,7 +1361,7 @@ EWD.application = {
             type: 'EWD.setParameter',
             name: 'monitorInterval',
             value: ui.value * 1000,
-            password: EWD.password
+            //password: EWD.password
           });
           toastr.clear();
           toastr.success('Monitoring interval reset to ' + ui.value + ' sec');
@@ -752,13 +1377,49 @@ EWD.application = {
     'internals.html': function(messageObj) {
       EWD.sockets.sendMessage({
         type: "EWD.inspect",
-        password: EWD.password
+        //password: EWD.password
+      });
+      $('#internalsNameBtn').click(function(e) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'nameForm.html',
+            targetId: 'InfoPanelText'
+          }
+        });
       });
       $('#internalsDebugBtn').click(function(e) {
         EWD.sockets.sendMessage({
           type: "EWD.getFragment", 
           params:  {
             file: 'debugForm.html',
+            targetId: 'InfoPanelText'
+          }
+        });
+      });
+      $('#childProcessBtn').click(function(e) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'childProcessForm.html',
+            targetId: 'InfoPanelText'
+          }
+        });
+      });
+      $('#webSocketsBtn').click(function(e) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'webSocketsForm.html',
+            targetId: 'InfoPanelText'
+          }
+        });
+      });
+      $('#externalPortBtn').click(function(e) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'externalPortForm.html',
             targetId: 'InfoPanelText'
           }
         });
@@ -946,13 +1607,6 @@ EWD.application = {
           $("#edit_secretKeyInput").val("");
           $("#edit_appNameInput0").val("");
         },
-        listOver: function() {
-          $(this).css({"background-color": "#9f9f9f", "cursor":"pointer"});
-        },
-
-        listOut: function() {
-          if (!$(this).hasClass('clicked')) $(this).css({"background-color": ""});
-        },
 
         listClick: function() {
           var id = $(this).attr("id");
@@ -1010,15 +1664,6 @@ EWD.application = {
           buildKeyList();
           buildAppsList();
         },
-
-        clearList: function(listId) {
-          var length = $(listId).children().length;
-          if (length > 1) {
-            for (var i = 1; i < length; i++) {
-              $(listId).children()[1].remove();
-            }
-          }
-        },
         deleteUser: function() {
           if (EWD.application.wsMgr.selectedUser) {
             EWD.sockets.sendMessage({
@@ -1037,16 +1682,6 @@ EWD.application = {
 
       EWD.sockets.sendMessage({
         type: "getWSUsers"
-      });
-
-      $("#mgrPasswordBtn").on('click', function() {
-        EWD.sockets.sendMessage({
-          type: "EWD.getFragment", 
-          params:  {
-            file: 'mgrPassword.html',
-            targetId: 'InfoPanelText'
-          }
-        });
       });
 
       $("#wsMgr_back").on('click', function() {
@@ -1345,8 +1980,12 @@ EWD.application = {
     loggedIn: function(messageObj) {
       toastr.options.target = 'body';
       $('#overview_Container').show();
-      EWD.password = $('#username').val();
-      EWD.sockets.sendMessage({type: "EWD.startConsole", message:  "start", password: EWD.password});
+      //EWD.password = $('#username').val();
+      EWD.sockets.sendMessage({
+        type: "EWD.startMonitor", 
+        message:  "start",
+        //password: EWD.password
+      });
       EWD.sockets.sendMessage({type: "getInterfaceVersion"});
       EWD.application.loggedIn = true;
     },
@@ -1365,8 +2004,14 @@ EWD.application = {
           heapTotal: messageObj.heapTotal,
           heapUsed: messageObj.heapUsed
         });
+        $('#masterProcess-qLength').text(messageObj.queueLength);
+        $('#masterProcess-max').text(messageObj.maxQueueLength);
         if (EWD.memory.plot.master.length > 60) EWD.memory.plot.master.shift();
         if (EWD.currentGraph) EWD.replotGraph(EWD.currentGraph);
+        for (var pid in messageObj.childProcess) {
+          $('#cpRequests' + pid).text(messageObj.childProcess[pid].noOfRequests);          
+          $('#cpAvailable' + pid).text(messageObj.childProcess[pid].isAvailable);  
+        }
       }
     },
 
@@ -1374,7 +2019,17 @@ EWD.application = {
       if (EWD.application.loggedIn) {
         var pid = messageObj.pid;
         $('#cpRequests' + pid).text(messageObj.noOfRequests);
-        $('#cpAvailable' + pid).text(messageObj.available);
+        var avail = $('#cpAvailable' + pid);
+        avail.text(messageObj.available);
+        avail.removeClass('cpAvailable');
+        avail.removeClass('cpNotAvailable');
+        if (messageObj.available === true) {
+          avail.addClass('cpAvailable');
+        }
+        else {
+          avail.addClass('cpNotAvailable');
+          EWD.enableNotAvailable();
+        }
       }
     },
 
@@ -1385,22 +2040,30 @@ EWD.application = {
         EWD.application.logTo = data.logTo;
         EWD.application.logFile = data.logFile;
         EWD.application.interval = data.interval;
+        $('#ewd-system-name').text('Overview: ' + data.name);
+        $('#ewd-navbar-title-phone').text(data.name);
+        $('#ewd-navbar-title-other').text(data.name);
         $('#buildVersion-Node').text(data.nodeVersion);
         $('#buildVersion-ewdgateway2').text(data.build);
         $('#startedDate').text(data.started);
         $('#uptime').text(data.uptime);
         $('#mainProcess-pid').text(data.masterProcess);
+        $('#masterProcess-qLength').text(data.queueLength);
+        $('#masterProcess-max').text(data.maxQueueLength);
         var childProcesses = messageObj.data.childProcesses;
         var html = '';
         var childProcess;
         var pid;
+        var className;
         for (var i = 0; i < childProcesses.length; i++) {
           childProcess = childProcesses[i];
           pid = childProcess.pid;
+          className = 'cpAvailable';
+          if (childProcess.available === false) className = 'cpNotAvailable';
           html = html + '<tr class="table" id="cpRow' + pid + '">';
           html = html + '<td class="cpPid" id="cpPid' + pid + '">' + pid + '</td>';
           html = html + '<td id="cpRequests' + pid + '">' + childProcess.noOfRequests + '</td>';
-          html = html + '<td id="cpAvailable' + pid + '">' + childProcess.available + '</td>';
+          html = html + '<td class="' + className + '" id="cpAvailable' + pid + '">' + childProcess.available + '</td>';
           html = html + '<td>';
           if (childProcess.debug.enabled) {
             html = html + '<button class="btn btn-info pull-left cpNodeInspector" type="button" id="cpNodeInspectorBtn' + childProcess.debug.port + '_' + childProcess.debug.web_port + '" data-toggle="tooltip" data-placement="top" title="" data-original-title="Start Debugging (web_port=' + childProcess.debug.web_port + ')"><span class="glyphicon glyphicon-wrench"></span></button>';
@@ -1416,6 +2079,7 @@ EWD.application = {
         }
         $('#childProcessTable tbody').html(html);
         EWD.enablePopovers();
+        EWD.enableNotAvailable();
         $('[data-toggle="tooltip"]').tooltip();
       }
     },
@@ -1436,6 +2100,7 @@ EWD.application = {
           var html = EWD.addChildProcessToTable(messageObj.pid, messageObj.debug);
           $('#childProcessTable tbody').append(html);
           EWD.enablePopovers();
+          EWD.enableNotAvailable();
           $('[data-toggle="tooltip"]').tooltip();
         }
       }
@@ -1451,16 +2116,6 @@ EWD.application = {
       $('#internals_params').text(JSON.stringify(messageObj.startParams, null, 2));
     },
 
-    'EWD.resetPassword': function(messageObj) {
-      if (!messageObj.error) {
-        EWD.password = messageObj.password
-      }
-      else {
-        toastr.error(messageObj.message);
-      }
-      $('#InfoPanel').modal('hide');
-    },
-
     'EWD.getDebugPorts': function(messageObj) {
       $('#debug_child_port').val(messageObj.child_port);
       $('#debug_web_port').val(messageObj.web_port);
@@ -1468,7 +2123,7 @@ EWD.application = {
 
     'EWD.changeDebugPorts': function(messageObj) {
       $('#InfoPanel').modal('hide');
-      $('#internals_Nav').click()
+      $('#internals_Nav').click();
     },
 
     'EWD.childProcessStopped': function(messageObj) {
@@ -1477,6 +2132,15 @@ EWD.application = {
         $('#cpRow' + pid).remove();
         delete EWD.memory.plot['cpPid' + pid];
         delete EWD.memory['cpPid' + pid];
+      }
+      if ($('#childProcessTable tbody').children().length === 0) {
+        toastr.warning('EWD.js has been stopped');
+        EWD.bootstrap3.nav.disable();
+        $('#overview_Container').hide();
+        $('#exit_Container').show();
+        $('#exit-restartBtn').click(function(e) {
+          location.reload();
+        });
       }
     },
 
@@ -1489,9 +2153,9 @@ EWD.application = {
       var key;
       var apps = [];
       var user;
-      EWD.application.wsMgr.clearList("#accessIdList");
-      EWD.application.wsMgr.clearList("#secretKeyList");
-      EWD.application.wsMgr.clearList("#appList");
+      EWD.clearList("#accessIdList");
+      EWD.clearList("#secretKeyList");
+      EWD.clearList("#appList");
       EWD.application.wsMgr.users = messageObj.message;
       for (var id in messageObj.message) {
         user = messageObj.message[id];
@@ -1503,8 +2167,8 @@ EWD.application = {
             key: user.secretKey, 
             apps: user.apps 
           }, EWD.application.wsMgr.userInfo);
-        $("#user_" + id).on('mouseover', EWD.application.wsMgr.listOver);
-        $("#user_" + id).on('mouseout', EWD.application.wsMgr.listOut);
+        $("#user_" + id).on('mouseover', EWD.listOver);
+        $("#user_" + id).on('mouseout', EWD.listOut);
         $("#user_" + id).on('click', EWD.application.wsMgr.listClick);
       }
     },
@@ -1534,7 +2198,25 @@ EWD.application = {
         type: "getWSUsers"
       });
       delete EWD.application.wsMgr.selectedUser;
+    },
+
+    'EWD.exit': function(messageObj) {
+      if (messageObj.error) {
+        toastr.error(messageObj.error);
+        return;
+      }
+      toastr.clear();
+      toastr.warning('EWD.js has been stopped');
+      setTimeout(function() {
+        EWD.bootstrap3.nav.disable();
+        $('#overview_Container').hide();
+        $('#exit_Container').show();
+        $('#exit-restartBtn').click(function(e) {
+          location.reload();
+        });
+      },2000);
     }
+
   }
 
 };

@@ -1,21 +1,13 @@
 <form id="monDestForm" role="form">
-  <legend>Set Destination:</legend>
   <div class="form-group">
-    <div class="radio-inline">
-      <label>
-        <input type="radio" name="monDest" id="monDestconsole" value="console" />
-        Console
-      </label>
-    </div>
-    <div class="radio-inline">
-      <label>
-        <input type="radio" name="monDest" id="monDestfile" value="file" />
-        File
-      </label>
-    </div>
     <div class="form-group">
-      <label for="monDestFileName">Filename: &nbsp;</label>
-      <input type="text" class="form-control" id="monDestFileName" placeholder="Logging File Name" value=""/>
+      <label for="monDestFileName">Log File Path: &nbsp;</label>
+      <input type="text" class="form-control" id="monDestFileName" placeholder="Log File Path" value=""/>
     </div>
+
+    <div>
+      <button type="button" class="btn btn-primary pull-left" id="monDestBtn">Update</button>
+    </div>
+
   </div>
 </form>

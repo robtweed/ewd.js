@@ -1,20 +1,47 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
- <head>
- <title>EWD.js Benchmark Test</title>
- <!--[if (IE 6)|(IE 7)|(IE 8)]>
- <script type="text/javascript" 
-src="//ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
- <![endif]-->
- </head>
- <body>
- <h2>EWD.js Benchmark Test</h2>
- <input type="button" value="Start" onClick="sendMessage()" />
- <div id="results"></div>
- <script type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
- <script src="/socket.io/socket.io.js"></script>
- <script src="/ewdjs/EWD.js"></script>
- <script src="app.js"></script>
- </body>
+  <head>
+    <title>EWD.js Benchmark Test</title>
+    <!--[if (IE 6)|(IE 7)|(IE 8)]>
+    <script type="text/javascript" src="//ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <h2>EWD.js Benchmark Test</h2>
+
+    <div id="login-mgrPassword" style="display:none">
+      EWD.js Management Password: 
+      <input type="password" name="mgrPassword" id="mgrPassword" />
+      <input type="button" id="mgrPasswordBtn" value="Login" onclick="EWD.application.login()" />
+    </div>
+
+    <div id="login-ewdMonitor" style="display:none">
+      <table>
+        <tr>
+          <td>ewdMonitor Username: </td>
+          <td><input type="text" name="username" id="username" /></td>
+        </tr>
+        <tr>
+          <td>ewdMonitor Password: </td>
+          <td><input type="password" name="password" id="password" /></td>
+        </tr>
+        <tr>
+          <td colspan="2"><input type="button" id="ewdMonitorBtn" value="Login" onclick="EWD.application.login()" />
+        </td>
+      </table>
+    </div>
+
+    <div id="test" style="display:none">
+      <input type="text" id="noOfMessages" value="100" />
+      <input type="button" value="To/From Child Process" id="startCPBtn" />
+      <input type="button" value="To/From Module/Session" id="startMumpsBtn" />
+      <div id="results"></div>
+    </div>
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/ewdjs/EWD.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>

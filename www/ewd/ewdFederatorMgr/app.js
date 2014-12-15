@@ -108,7 +108,6 @@ EWD.currentGraph = false;
       });
     };
 
-
 EWD.application = {
   name: 'ewdFederatorMgr',
   timeout: 3600,
@@ -123,6 +122,9 @@ EWD.application = {
       cache: true
     },
     internals: {
+      cache: false
+    },
+    db: {
       cache: false
     },
     about: {
@@ -140,6 +142,185 @@ EWD.application = {
     EWD.getFragment('navlist.html', 'navList'); 
     EWD.getFragment('confirm.html', 'confirmPanel'); 
 
+    EWD.getGlobalSubscripts = function(params) {
+      EWD.sockets.sendMessage({
+        type: 'getGlobalSubscripts',
+        params: params,
+        done: function(messageObj) {
+          if (EWD.application.loggedIn) {
+            console.log('*** messageObj: ' + JSON.stringify(messageObj, null, 2));
+            var data = messageObj.message.subscripts;
+            if (data.rootLevel === 'true') {
+              $('.tree-example').remove();
+              EWD.application.messageObj = messageObj;
+              EWD.sockets.sendMessage({
+                type: "EWD.getFragment", 
+                params:  {
+                  file: 'tree.html',
+                  targetId: 'sessionDataTree'
+                }
+              });
+            }
+            else {
+              EWD.application.tree.callback({data: data.subscripts});
+            }
+          }
+        }
+      });  
+    };
+
+    // FuelUX Tree
+    EWD.application.tree = {};
+    EWD.application.tree.DataSource = function (options) {
+      this._formatter = options.formatter;
+      this._columns = options.columns;
+      this._data = options.data;
+    };
+    EWD.application.tree.DataSource.prototype = {
+      columns: function () {
+        return this._columns;
+      },
+      data: function (options, callback) {
+        if (jQuery.isEmptyObject(options)) {
+          // load up the tree
+          callback({data: this._data});
+        }
+        else {
+          // fetch sub-items
+          //console.log('options: ' + JSON.stringify(options, null, 2));
+          EWD.application.tree.callback = callback;
+          var type;
+          var appName;
+          var folder;
+          if (options.type === 'folder') {
+            EWD.getGlobalSubscripts({
+              rootLevel: false,
+              operation: options.operation,
+              globalName: options.globalName,
+              subscripts: options.subscripts
+            });
+          }
+        }
+      }
+    };
+
+    EWD.application.tree.confirmDelete = function(subscripts, xtype) {
+      var globalName = subscripts.shift();
+      $('#confirmPanelHeading').text('Are you sure you want to delete this record:');
+      $('#confirmPanelQuestion').text(globalName + JSON.stringify(subscripts));
+      $('#confirmPanelOKBtn').text('Yes');
+      $('#confirmPanelOKBtn').attr('data-globalName', globalName);
+      $('#confirmPanelOKBtn').attr('data-subscripts', JSON.stringify(subscripts));
+      $('#confirmPanelOKBtn').attr('data-event-type', 'deleteGlobalNode');
+      $('#confirmPanelOKBtn').attr('data-x-type', xtype);
+      $('#confirmPanel').modal('show');
+      //EWD.stopBtn = 'deleteGlobalNode';
+    };
+
+    EWD.application.tree.removeDeleteButton = function() {
+      $('.tree-folder-name').off();
+      $('.tree-item-name').off();
+      EWD.application.tree.clearDeleteButton();
+    };
+
+    EWD.application.tree.clearDeleteButton = function() {
+      if ($('#xcheck').length > 0) {
+        var xtype = $('#xcheck').attr('class');
+        if (xtype === 'xfolder') {
+          text = $('#xcheck').attr('data-x-name');
+          var parNode = $('#xcheck').parent();
+          $('#xcheck').remove();
+          $(parNode).text(text);
+        }
+        if (xtype === 'xitem') {
+          var nodeSubscript = $('#xcheck').attr('data-x-name');
+          var nodeValue = $('#xcheck').attr('data-x-value');
+          var parNode = $('#xcheck').parent();
+          $('#xcheck').remove();
+          $(parNode).html(nodeSubscript + '<span>: </span>' + nodeValue);
+        }
+      }
+    };
+
+    EWD.application.tree.addDeleteButton = function() {
+      var text;
+      var nodeSubscript;
+      var nodeValue;
+      EWD.mouseIn = false;
+
+      setTimeout(function() {
+        $('.tree-folder-name').hover(function(e) {
+          e.stopPropagation();
+          if (EWD.mouseIn) return;
+          EWD.mouseIn = true;
+          EWD.application.tree.clearDeleteButton();
+          text = $(this).text().trim();
+          //$(this).html('<div class="checkbox" id="xcheck"><label id="xcheckText">' + text + '<input type="checkbox" name="xxx" /></label></div>');
+          $(this).html('<div id="xcheck" class="xfolder" data-x-name="' + text + '">' + text + '&nbsp;&nbsp;<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="top" data-original-title="Delete this node and its children"><span class="glyphicon glyphicon-remove"></span></button></div>');
+          $('[data-toggle="tooltip"]').tooltip();
+          $('#xcheck').on('click', function(evt) {
+            evt.stopPropagation();
+            var parents = $(e.target).parents('.tree-folder');
+            var nodes = [];
+            for (var i = 0; i < parents.length; i++) {
+              nodes.push($(parents[i]).find('.tree-folder-name:first'));
+            }
+            var path = [];
+            for (i = 0; i < nodes.length; i++) {
+              path.push($(nodes[i]).text().trim());
+            }
+            path.reverse();
+            path[path.length - 1] = text;
+            //console.log(JSON.stringify(path));
+            EWD.application.tree.node = $(e.target).parents('.tree-folder:first');
+            EWD.application.tree.confirmDelete(path, 'folder');
+          });
+          $('#xcheck').on('mouseleave', function(evt) {
+            evt.stopPropagation();
+            EWD.application.tree.clearDeleteButton();
+          });
+          EWD.mouseIn = false;
+        });
+
+        $('.tree-item-name').hover(function(e) {
+          e.stopPropagation();
+          if (EWD.mouseIn) return;
+          EWD.mouseIn = true;
+          EWD.application.tree.clearDeleteButton();
+          text = $(this).html();
+          nodeSubscript = text.split('<span>')[0];
+          nodeValue = text.split('</span>')[1];
+          $(this).html('<div id="xcheck" class="xitem" data-x-name="' + nodeSubscript + '" data-x-value="' + nodeValue + '">' + text + '&nbsp;&nbsp;<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="top" data-original-title="Delete"><span class="glyphicon glyphicon-remove"></span></button></div>');
+          $('[data-toggle="tooltip"]').tooltip();
+          $('#xcheck').on('click', function(evt) {
+            evt.stopPropagation();
+            var parents = $(this).parents('.tree-folder');
+            var nodes = [];
+            for (var i = 0; i < parents.length; i++) {
+              nodes.push($(parents[i]).find('.tree-folder-name:first'));
+            }
+            var path = [];
+            for (i = 0; i < nodes.length; i++) {
+              path.push($(nodes[i]).text().trim());
+            }
+            path.reverse();
+            //var parNode = $(this).parents('.tree-item:first').parent(); 
+            //path.push($(parNode).find('.tree-folder-name:first').text().trim());
+            path.push(nodeSubscript);
+            //console.log(JSON.stringify(path));
+            EWD.application.tree.node = $(this).parents('.tree-item:first');
+            EWD.application.tree.confirmDelete(path, 'item');
+          });
+          $('#xcheck').on('mouseleave', function(evt) {
+            evt.stopPropagation();
+            EWD.application.tree.clearDeleteButton();
+          });
+          EWD.mouseIn = false;
+        });
+     
+      },300);
+    };
+
     EWD.bootstrap3.nav.enable();
 
   },
@@ -151,6 +332,15 @@ EWD.application = {
       console.log('"about" menu was selected');
     }
     */
+
+    db: function() {
+      if (EWD.targetIdExists('dbPageLoaded')) {
+        $('.fuelux').remove();
+        EWD.sockets.sendMessage({
+          type: 'getGlobals'
+        });
+      }
+    },
 
     disconnect: function(messageObj) {
       //$('#disconnect_Container').text('');
@@ -200,6 +390,7 @@ EWD.application = {
           done: function(messageObj) {
             if(messageObj.ok) {
               $('#loginPanel').modal('hide');
+              EWD.application.loggedIn = true;
               EWD.sockets.sendMessage({
                 type: 'getServers',
                 done: function(messageObj) {
@@ -515,7 +706,61 @@ EWD.application = {
         EWD.application.getMemoryEvent = setTimeout(EWD.application.getMemory, 1000);
         EWD.application.memoryPolling = true;
       }
-    }
+    },
+
+    'tree.html': function(messageObj) {
+      var msg = EWD.application.messageObj;
+      if (msg.message.operation === 'sessionData') {
+        $('#sessionDataPanel').show();
+        $('#sessionDataTitle').text('Session ' + msg.message.sessid);
+      }
+      var data;
+      if (msg.type === 'getGlobals') {
+        data = msg.message.globals;
+      }
+      else {
+        data = msg.message.subscripts;
+      }
+      EWD.application.tree.treeDataSource = new EWD.application.tree.DataSource({
+        data: data,
+        delay: 400
+      });
+      $('#ewd-session-root').tree({dataSource: EWD.application.tree.treeDataSource});
+      $('#wait').hide();
+      $('.tree-example').on('selected', function (evt, data) {
+        // remove the tick if you select an item
+        EWD.tree = {evt: evt, data: data};
+        $('.icon-ok').removeClass('icon-ok').addClass('tree-dot');
+      });
+      $('.tree-example').on('opened', function (evt, data) {
+        EWD.tree = {evt: evt, data: data};
+      });
+    },
+
+    'db.html': function(messageObj) {
+      $('[data-toggle="tooltip"]').tooltip();
+      $('#dbTreePanel').height($(window).height() - 200);
+      $('#dbDisableDeleteBtn').hide();
+      EWD.sockets.sendMessage({
+        type: 'getGlobals'
+      });
+      $('#dbReloadBtn').on('click', function(e) {
+        EWD.sockets.sendMessage({
+          type: 'getGlobals'
+        });
+      });
+      $('#dbEnableDeleteBtn').on('click', function(e) {
+        EWD.application.tree.addDeleteButton();
+        $('#dbDisableDeleteBtn').show();
+        $('#dbEnableDeleteBtn').hide();
+      });
+      $('#dbDisableDeleteBtn').on('click', function(e) {
+        EWD.application.tree.removeDeleteButton();
+        $('#dbDisableDeleteBtn').hide();
+        $('#dbEnableDeleteBtn').show();
+      });
+    },
+
   },
 
   onMessage: {
@@ -526,7 +771,22 @@ EWD.application = {
       toastr.options.target = 'body';
       $('#main_Container').show();
       //$('#mainPageTitle').text('Welcome to VistA, ' + messageObj.message.name);
-    }
+    },
+
+    getGlobals: function(messageObj) {
+      if (EWD.application.loggedIn) {
+        $('.tree-example').remove();
+        EWD.application.messageObj = messageObj;
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: 'tree.html',
+            targetId: 'dbTreePanel'
+          }
+        });
+      }
+    },
+
   }
 
 };

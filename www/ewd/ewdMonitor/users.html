@@ -1,0 +1,125 @@
+<div class="row" id="usersPageLoaded">
+  <div class="col-md-12">
+    <h1>ewdMonitor User Management
+    </h1>
+
+    <div id="manageUsersPanel" class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title" id="wsMgr-title">Manage ewdMonitor Users</h3>
+      </div>
+      <div class="panel-body">
+
+        <div class="row">   
+          <div class="col-xs-12">
+            <div class="btn-group">
+              <button id="users_EditBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-folder-open"></span> Edit Selected User
+              </button>
+              <button id="users_DeleteBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-floppy-remove"></span> Delete Selected User
+              </button>
+              <button id="users_AddBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-plus"></span> Add User
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <br />
+
+        <div class="row"> 
+          <div class="col-xs-4">
+            <ul class="list-group" id="userList">
+              <li class="list-group-item" id="userListHeader">
+                <h4 class="list-group-item-heading">Username</h4>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="addUsersPanel" class="panel panel-primary collapse">
+      <div class="panel-heading">
+        <h3 class="panel-title" id="usersAdd-title">Add an ewdMonitor User</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="btn-group">
+              <button id="users_BackBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-arrow-left"></span> Back
+              </button>
+              <button id="users_SaveBtn" type="button" class="btn btn-default">
+               <span class="glyphicon glyphicon-floppy-disk"></span> Save
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <br />
+                        
+        <div class="row"> 
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="mgrCurrentPassword">Management Password: &nbsp;</label>
+              <input type="password" class="form-control" id="users_mgtPassword" placeholder="EWD.js Management Password" value=""/>
+            </div>
+            <div class="form-group">
+              <label for="users_username">Username</label>
+              <input type="text" class="form-control" id="users_username" placeholder="Enter a new username" />
+            </div>
+            <div class="form-group">
+              <label for="users_password">Password</label>
+              <input type="password" class="form-control" id="users_password" placeholder="Enter a password for the new user" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="editUsersPanel" class="panel panel-primary collapse">
+      <div class="panel-heading">
+        <h3 class="panel-title" id="usersEdit-title">Change an ewdMonitor User's Password</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="btn-group">
+              <button id="users_EditBackBtn" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-arrow-left"></span> Back
+              </button>
+              <button id="users_EditSaveBtn" type="button" class="btn btn-default">
+               <span class="glyphicon glyphicon-floppy-disk"></span> Save
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <br />
+                        
+        <div class="row"> 
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="users_username">Username</label>
+              <input type="text" readonly="readonly" class="form-control" id="users_edit_username" />
+            </div>
+            <div class="form-group">
+              <label for="users_edit_mgtPassword">Management Password: &nbsp;</label>
+              <input type="password" class="form-control" id="users_edit_mgtPassword" placeholder="EWD.js Management Password" value=""/>
+            </div>
+            <div class="form-group">
+              <label for="users_password">New Password</label>
+              <input type="password" class="form-control" id="users_edit_password" placeholder="Enter a new password for the user" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+  </div>
+</div>

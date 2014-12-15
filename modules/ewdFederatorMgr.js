@@ -120,70 +120,75 @@ module.exports = {
     }, 
 
     getServers: function(params, ewd) {
-      var servers = new ewd.mumps.GlobalNode('zewdFederators', []);
-      if (servers._exists) {
-        var list = [];
-        servers._forEach(function(name) {
-        list.push(name);
-        });
-        return {
-          status: true,
-          servers: list
-        };
-      }
-      else {
-        return {status: false};
+      if (ewd.session.isAuthenticated) {
+        var servers = new ewd.mumps.GlobalNode('zewdFederators', []);
+        if (servers._exists) {
+          var list = [];
+          servers._forEach(function(name) {
+          list.push(name);
+          });
+          return {
+            status: true,
+            servers: list
+          };
+       }
+        else {
+          return {status: false};
+        }
       }
     },
 
     addServer: function(params, ewd) {
-      if (params.name === '') return {error: 'You must enter a Name'};
-      if (params.host === '') return {error: 'You must enter a host IP Address or Name'};
-      if (params.port === '') return {error: 'You must enter a Port Number'};
-      if (params.port < 1) return {error: 'Invalid Port Number'};
-      if (params.password === '') return {error: "You must enter the REST Server's Management Password"};
-      if (params.ssl !== 'true' && params.ssl !== 'false') return {error: "Invalid SSL value"};
-      params.ssl = (params.ssl === 'true');
-      var servers = new ewd.mumps.GlobalNode('zewdFederators', []);
-      if (servers.$(params.name)._exists) return {error: 'That name is already in use'};
-      ewd.session.$('restServer')._setDocument(params, true);
-      var request = {
-        path: '/_mgr/info',
-      };
-      restRequest(request, ewd, function(error, response) {
-        if (error) {
-          //console.log("error: " + JSON.stringify(error));
-          ewd.sendWebSocketMsg({
-            type: 'addServer',
-            message: error
-          });
-        }
-        else {
-          //console.log("response: " + JSON.stringify(response, null, 2));
-          if (response.product === 'ewd-federator') {
-            //var servers = new ewd.mumps.GlobalNode('zewdFederators', []);
-            servers.$(params.name)._setDocument(params, true);
+      if (ewd.session.isAuthenticated) { 
+        if (params.name === '') return {error: 'You must enter a Name'};
+        if (params.host === '') return {error: 'You must enter a host IP Address or Name'};
+        if (params.port === '') return {error: 'You must enter a Port Number'};
+        if (params.port < 1) return {error: 'Invalid Port Number'};
+        if (params.password === '') return {error: "You must enter the REST Server's Management Password"};
+        if (params.ssl !== 'true' && params.ssl !== 'false') return {error: "Invalid SSL value"};
+        params.ssl = (params.ssl === 'true');
+        var servers = new ewd.mumps.GlobalNode('zewdFederators', []);
+        if (servers.$(params.name)._exists) return {error: 'That name is already in use'};
+        ewd.session.$('restServer')._setDocument(params, true);
+        var request = {
+          path: '/_mgr/info',
+        };
+        restRequest(request, ewd, function(error, response) {
+          if (error) {
+            //console.log("error: " + JSON.stringify(error));
             ewd.sendWebSocketMsg({
               type: 'addServer',
-              message: {
-                success: true,
-                response: response
-              }
+              message: error
             });
           }
           else {
-            ewd.sendWebSocketMsg({
-              type: 'addServer',
-              message: {
-                error: 'Invalid Server'
-              }
-            });
+            //console.log("response: " + JSON.stringify(response, null, 2));
+            if (response.product === 'ewd-federator') {
+              //var servers = new ewd.mumps.GlobalNode('zewdFederators', []);
+              servers.$(params.name)._setDocument(params, true);
+              ewd.sendWebSocketMsg({
+                type: 'addServer',
+                message: {
+                  success: true,
+                  response: response
+                }
+              });
+            }
+            else {
+              ewd.sendWebSocketMsg({
+                type: 'addServer',
+                message: {
+                  error: 'Invalid Server'
+                }
+              });
+            }
           }
-        }
-      });
+        });
+      }
     },
 
     connect: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
       if (params.name && params.name !== '') {
         var servers = new ewd.mumps.GlobalNode('zewdFederators', [params.name]);
         if (servers._exists) {
@@ -227,6 +232,7 @@ module.exports = {
     },
 
     halt: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
       var request = {
         path: '/_mgr/halt',
       };
@@ -252,6 +258,7 @@ module.exports = {
     },
 
     getDBInfo: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
       var request = {
         path: '/_mgr/getDBInfo',
       };
@@ -267,6 +274,7 @@ module.exports = {
     },
 
     startChildProcess: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
       var request = {
         path: '/_mgr/childProcess',
         method: 'PUT'
@@ -284,6 +292,47 @@ module.exports = {
           pid: response.pid
         });
       });
+    },
+
+    getGlobals: function(params, ewd) {
+      if (ewd.session.isAuthenticated) {
+        var request = {
+          path: '/_mgr/globalDirectory',
+        };
+        restRequest(request, ewd, function(error, response) {
+          console.log("getGlobals response: " + JSON.stringify(response));
+          ewd.sendWebSocketMsg({
+            type: 'getGlobals',
+            message: {
+              globals: response
+            }
+          });
+        });
+      }
+    },
+
+    getGlobalSubscripts: function(params, ewd) {
+      if (ewd.session.isAuthenticated) {
+        console.log('** getGlobalSubscripts sending message with query = ' + JSON.stringify(params));
+        var request = {
+          path: '/_mgr/globalSubscripts',
+          query: {
+            rootLevel: params.rootLevel,
+            operation: params.operation,
+            globalName: params.globalName,
+            subscripts: JSON.stringify(params.subscripts)
+          }
+        };
+        restRequest(request, ewd, function(error, response) {
+          console.log("getGlobalSubscripts response: " + JSON.stringify(response));
+          ewd.sendWebSocketMsg({
+            type: 'getGlobalSubscripts',
+            message: {
+              subscripts: response
+            }
+          });
+        });
+      }
     },
 
     getInternals: function(params, ewd) {
@@ -339,7 +388,7 @@ module.exports = {
       };       
       (function(pid) {
         restRequest(request, ewd, function(error, response) {
-          console.log("getMemory response: " + JSON.stringify(response));
+          //console.log("getMemory response: " + JSON.stringify(response));
           ewd.sendWebSocketMsg({
             type: 'getMemory',
             pid: pid,
@@ -359,7 +408,7 @@ module.exports = {
         };       
         (function(pid) {
           restRequest(request, ewd, function(error, response) {
-            console.log("getMemory response: " + JSON.stringify(response));
+            //console.log("getMemory response: " + JSON.stringify(response));
             ewd.sendWebSocketMsg({
               type: 'getMemory',
               pid: pid,

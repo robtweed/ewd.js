@@ -1,0 +1,39 @@
+<form id="childProcessForm" role="form">
+  <div>
+
+    <label>Automatic Control:</label>
+    <div class="form-group">
+      <div class="radio-inline">
+        <label>
+          <input type="radio" name="childProcessAuto" id="childProcessAuto0" value="0" />
+          Off
+        </label>
+      </div>
+      <div class="radio-inline">
+        <label>
+          <input type="radio" name="childProcessAuto" id="childProcessAuto1" value="1" />
+          On
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="childProcess-maximum">Maximum No of Processes: &nbsp;</label>
+      <input type="text" class="form-control" id="childProcess-maximum" placeholder="Maximum Child Processes" value=""/>
+    </div>
+
+    <div class="form-group">
+      <label for="childProcess-idelLimit">Maximum Idle Time (sec): &nbsp;</label>
+      <input type="text" class="form-control" id="childProcess-idleLimit" placeholder="Max Idle Time" value=""/>
+    </div>
+
+    <div class="form-group">
+      <label for="childProcess-unavailableLimit">Maximum Unavailable Time (sec): &nbsp;</label>
+      <input type="text" class="form-control" id="childProcess-unavailableLimit" placeholder="Max Unavailable Time" value=""/>
+    </div>
+
+    <div>
+      <button type="button" class="btn btn-primary pull-left" id="updateParametersBtn">Update</button>
+    </div>
+  </div>
+</form>

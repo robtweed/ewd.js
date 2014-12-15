@@ -44,9 +44,23 @@
       .sidebar-nav {
         padding: 9px 0;
       }
+      .focusedInput {
+        border-color: rgba(82,168,236,.8);
+        outline: 0;
+        outline: thin dotted \9;
+        -moz-box-shadow: 0 0 8px rgba(82,168,236,.6);
+        box-shadow: 0 0 8px rgba(82,168,236,.6) !important;
+      }
       .console {
         height: 500px;
         overflow: auto;
+      }
+      .cpNotAvailable {
+        color: #d00;
+        cursor: pointer;
+      }
+      .cpAvailable {
+        color: #000;
       }
       .graph-Container {
         box-sizing: border-box;
@@ -94,25 +108,7 @@
 
     <!-- Modal Login Form -->
 
-    <div id="loginPanel" class="modal fade">
-      <div class="modal-dialog">
-        <div id="loginModalPanel" class="modal-content">
-          <div class="modal-header">
-            <h3 id="ewd-loginPanel-title"></h3>
-          </div>
-          <div id="loginPanelBody" class="modal-body">
-            <legend>Authentication</legend>
-            <div class="form-group">
-              <label for="password">EWD.js Management Password: &nbsp;</label>
-              <input type="password" class="form-control" id="username" placeholder="Enter password" />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <a href="#" id="loginBtn" style="display: none" class="btn btn-primary">Login</a>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="loginPanel" class="modal fade"></div>
 
     <!-- Main Page Definition -->
 
@@ -137,7 +133,7 @@
                   <li id="sessions_Nav" data-header="sessions"><a href="#">Sessions</a></li>
                   <li id="db_Nav" data-header="db"><a href="#">Database</a></li>
                   <li id="importer_Nav" data-header="import"><a href="#">Import</a></li>
-                  <li id="wsMgr_Nav" data-header="wsMgr"><a href="#">Security</a></li>
+                  <li id="security_Nav" data-header="security"><a href="#">Security</a></li>
                   <li id="about_Nav" data-header="about"><a href="#">About</a></li>
                   <li id="logout_Nav" data-header="logout"><a href="#">Logout</a></li>
                 </ul>
@@ -157,7 +153,7 @@
       <div id="overview_Container" class="container in" style="display: none">
         <div class="row">
           <div class="col-md-12">
-            <h1>EWD.js System Overview</h1>
+            <h1 id="ewd-system-name">EWD.js System Overview</h1>
             <div class="panel">
               <div class="panel-body">
                 <div class="col-md-4">
@@ -289,7 +285,7 @@
             Reconfigure Monitoring 
             <button type="button" class="btn btn-primary" id="monitoringLevelBtn">Level</button>
             &nbsp;
-            <button type="button" class="btn btn-primary" id="monitoringDestBtn">Destination</button>
+            <button type="button" class="btn btn-primary" id="monitoringDestBtn">Log File</button>
 
 
           </div>
@@ -298,9 +294,10 @@
           <div class="col-md-12">
             <div class="panel">
               <div class="panel-body">
-                <div class="console" id="consoleText">
+                <h4 id="console-file">File Path here...</h4>
+                <pre class="console" id="consoleText">
 
-                </div>
+                </pre>
               </div>
             </div>
           </div>
@@ -322,14 +319,26 @@
       <!-- import CONTAINER -->
       <div id="importer_Container" class="container collapse"></div>
 
-      <!-- wsMgr CONTAINER -->
-      <div id="wsMgr_Container" class="container collapse"></div>
+      <!-- security CONTAINER -->
+      <div id="security_Container" class="container collapse"></div>
 
       <!-- about CONTAINER -->
       <div id="about_Container" class="container collapse"></div>
 
       <!-- logout CONTAINER -->
       <div id="logout_Container" class="container collapse"></div>
+
+      <!-- exit CONTAINER -->
+      <div id="exit_Container" class="container collapse">
+        <div class="row" id="exitPageLoaded">
+          <div class="col-md-12">
+            <h1>EWD.js has been shut down</h1>
+            <button class="btn btn-success" id="exit-restartBtn">
+              Restart ewdMonitor
+            </button>
+          </div>
+        </div>
+      </div>
 
     </div>
 
@@ -366,6 +375,12 @@
             <h3 id="confirmPanelHeading">Confirm Panel</h3>
           </div>
           <div class="modal-body">
+
+            <div id="confirmPassword" class="form-group">
+              <label for="confirm_mgtPassword">Management Password: &nbsp;</label>
+              <input type="password" class="form-control" id="confirm_password" placeholder="EWD.js Management Password" value=""/>
+            </div>
+
             <p id="confirmPanelQuestion">OK?</p>
           </div>
           <div class="modal-footer">
