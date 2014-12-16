@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 10: 15 December 2014
+Build 12: 16 December 2014
 
 */
 
@@ -32,7 +32,7 @@ var isInteger = function(n) {
   return $.isNumeric(n) && parseInt(n, 10) > 0;
 };
 
-EWD.sockets.log = true;
+//EWD.sockets.log = true;
 
 EWD.application = {
   name: 'ewdMonitor',
@@ -707,9 +707,9 @@ EWD.application = {
         });
         EWD.consoleInitialised = true;
         EWD.application.onAfterAnyPageSwap = function(container) {
-          console.log('**** changed from ' + container);
+          //console.log('**** changed from ' + container);
           if (container === 'console') {
-            console.log('Console panel collapsed!');
+            //console.log('Console panel collapsed!');
             clearTimeout(EWD.pollTailEvent);
           }
         };
@@ -750,6 +750,7 @@ EWD.application = {
     },
 
     'logout.html': function(messageObj) {
+      clearTimeout(EWD.pollTailEvent);
       $('#logout-restartBtn').click(function(e) {
         location.reload();
       });
@@ -1601,6 +1602,7 @@ EWD.application = {
             $("#edit_appInputs").children()[2].remove();
           }
         },
+
 
         clearInputs: function() {
           $("#edit_accessIdInput").val("");
