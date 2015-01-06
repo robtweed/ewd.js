@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ewdMonitor: EWD.js Monitor Application                                   |
  |                                                                          |
- | Copyright (c) 2013-14 M/Gateway Developments Ltd,                        |
+ | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
  | Reigate, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 12: 16 December 2014
+Build 13: 6 January 2015
 
 */
 
@@ -1550,8 +1550,8 @@ EWD.application = {
           }   
           EWD.application.wsMgr.appCount = 0;
           $("#menu-0").removeClass("active");
-          $("#manageUsersPanel").hide();
-          $("#editUsersPanel").show();
+          $("#manageWSUsersPanel").hide();
+          $("#editWSUsersPanel").show();
           var userObj = {};
           if (mode === 'edit') {
             $('#wsMgrEdit-title').text('Edit Registered User');
@@ -1687,8 +1687,8 @@ EWD.application = {
       });
 
       $("#wsMgr_back").on('click', function() {
-        $("#manageUsersPanel").show();
-        $("#editUsersPanel").hide();
+        $("#manageWSUsersPanel").show();
+        $("#editWSUsersPanel").hide();
       });
 
       $("#wsMgr_extraApp").on('click', function() {
@@ -2185,8 +2185,8 @@ EWD.application = {
         }
         toastr.clear();
         toastr.success(msg);
-        $("#manageUsersPanel").show();
-        $("#editUsersPanel").hide();
+        $("#manageWSUsersPanel").show();
+        $("#editWSUsersPanel").hide();
         EWD.sockets.sendMessage({
           type: "getWSUsers"
         });
