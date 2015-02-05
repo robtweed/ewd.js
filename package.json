@@ -27,8 +27,8 @@
     "mime": ">=1.2.11",
     "ewdliteclient": ">=0.4.0",
     "node-uuid": ">=1.4.2",
-    "ntp-client" ">=0.5.3",
-    "speakeasy" ">=1.0.3"
+    "ntp-client": ">=0.5.3",
+    "speakeasy": ">=1.0.3"
   },
   "licenses": [
     "Apache"
