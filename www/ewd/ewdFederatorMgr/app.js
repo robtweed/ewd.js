@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ewdFederatorMgr: EWD Federator Management Utility                        |
  |                                                                          |
- | Copyright (c) 2013-14 M/Gateway Developments Ltd,                        |
+ | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
  | Reigate, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 1: 12 November 2014
+Build 2: 5 February 2015
 
 */
 
@@ -138,9 +138,11 @@ EWD.application = {
 
   onStartup: function() {
 
-    EWD.getFragment('login.html', 'loginPanel'); 
+    //EWD.getFragment('login.html', 'loginPanel'); 
     EWD.getFragment('navlist.html', 'navList'); 
     EWD.getFragment('confirm.html', 'confirmPanel'); 
+
+    $('#loginPanel').modal({show: true, backdrop: 'static'});
 
     EWD.getGlobalSubscripts = function(params) {
       EWD.sockets.sendMessage({
@@ -323,6 +325,70 @@ EWD.application = {
 
     EWD.bootstrap3.nav.enable();
 
+    EWD.activateLoginPanel = function(fullLogin) {
+      $('#ewd-loginPanel-title').text('EWD Federator Manager');
+
+      document.getElementById('username').focus();
+
+      $('#loginPanelBody').keydown(function(event){
+        if (event.keyCode === 13) {
+          document.getElementById('loginBtn').click();
+        }
+      });
+
+      $('#loginBtn').click(function(event) {
+        event.preventDefault(); // prevent default bootstrap behavior
+        var password = '';
+        if (fullLogin) password = $('#password').val();
+        EWD.sockets.submitForm({
+          fields: {
+            username: $('#username').val(),
+            password: password
+          },
+          messageType: 'EWD.form.login',
+          alertTitle: 'Login Error',
+          toastr: {
+            target: 'loginPanel'
+          },
+          done: function(messageObj) {
+            if(messageObj.ok) {
+              $('#loginPanel').modal('hide');
+              EWD.application.loggedIn = true;
+              EWD.sockets.sendMessage({
+                type: 'getServers',
+                done: function(messageObj) {
+                  if (messageObj.message.status) {
+                    EWD.application.servers = messageObj.message.servers;
+                    EWD.getFragment('selectServer.html', 'serverPanel');
+                  }
+                  else {
+                    //display new server panel
+                    EWD.getFragment('addServer.html', 'serverPanel'); 
+                  }
+                }
+              });
+            }
+          }
+        }); 
+      });
+
+      $('#loginBtn').show();
+
+    };
+
+    EWD.sockets.sendMessage({
+      type: 'getLoginType',
+      done: function(messageObj) {
+        EWD.sockets.sendMessage({
+          type: "EWD.getFragment", 
+          params:  {
+            file: messageObj.message.file,
+            targetId: 'loginPanel'
+          }
+        });
+      }
+    });
+
   },
 
   onPageSwap: {
@@ -363,55 +429,11 @@ EWD.application = {
     // add handlers that fire after fragment contents are loaded into browser
 
     'login.html': function(messageObj) {
-      $('#ewd-loginPanel-title').text('EWD Federator');
+      EWD.activateLoginPanel(true);
+    },
 
-      $('#loginPanel').on('show.bs.modal', function() {
-        setTimeout(function() {
-          document.getElementById('username').focus();
-        },1000);
-      });
-      $('#loginPanelBody').keydown(function(event){
-        if (event.keyCode === 13) {
-          document.getElementById('loginBtn').click();
-        }
-      });
-
-      $('#loginBtn').click(function(event) {
-        event.preventDefault(); // prevent default bootstrap behavior
-        EWD.sockets.submitForm({
-          fields: {
-            username: $('#username').val()
-          },
-          messageType: 'EWD.form.login',
-          alertTitle: 'Login Error',
-          toastr: {
-            target: 'loginPanel'
-          },
-          done: function(messageObj) {
-            if(messageObj.ok) {
-              $('#loginPanel').modal('hide');
-              EWD.application.loggedIn = true;
-              EWD.sockets.sendMessage({
-                type: 'getServers',
-                done: function(messageObj) {
-                  if (messageObj.message.status) {
-                    EWD.application.servers = messageObj.message.servers;
-                    EWD.getFragment('selectServer.html', 'serverPanel');
-                  }
-                  else {
-                    //display new server panel
-                    EWD.getFragment('addServer.html', 'serverPanel'); 
-                  }
-                }
-              });
-            }
-          }
-        }); 
-      });
-
-      if ($('#loginPanel').length > 0) $('#loginPanel').modal({show: true, backdrop: 'static'});
-
-      $('#loginBtn').show();
+    'initialLogin.html': function(messageObj) {
+      EWD.activateLoginPanel(false);
     },
 
     'navlist.html': function(messageObj) {
@@ -466,7 +488,12 @@ EWD.application = {
           },
           done: function(messageObj) {
             if (messageObj.message.error) {
-              toastr.error('Unable to connect to server: ' + messageObj.message.error);
+              if (messageObj.message.data) {
+                toastr.error('Unable to connect to server: ' + messageObj.message.data.message);
+              }
+              else {
+                toastr.error('Unable to connect to server: ' + messageObj.message.error);
+              }
             }
             else {
               EWD.application.servers = [$('#name').val()];

@@ -2,7 +2,7 @@
  ----------------------------------------------------------------------------
  | ewdMonitor: EWD.js Monitor Application                                   |
  |                                                                          |
- | Copyright (c) 2013-14 M/Gateway Developments Ltd,                        |
+ | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
  | Reigate, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
@@ -22,11 +22,13 @@
  | See the License for the specific language governing permissions and      |
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
-Build 12: 16 December 2014
+Build 13: 5 February 2015
 */
 
 var fs = require('fs');
 var crypto = require("crypto");
+var se = require('speakeasy');
+var ntp = require('ntp-client');
 
 var password = {
   encrypt: function(password) {
@@ -36,6 +38,7 @@ var password = {
     var keyLength = 64;
     var encrypted = crypto.pbkdf2Sync(password, salt, iterations, keyLength);
     return {
+      type: 'password',
       hash: encrypted.toString('base64'),
       salt: salt.toString('base64')
     };
@@ -74,14 +77,62 @@ module.exports = {
 
     'EWD.form.login': function(params, ewd) {
       var loginGlo = new ewd.mumps.GlobalNode('zewdMonitor', ['login']);
-      if (loginGlo._exists) {
+      if (loginGlo._exists) { 
         if (params.username === '') return 'You must enter your ewdMonitor username';
-        if (params.password === '') return 'You must enter your ewdMonitor password';
         var userGlo = loginGlo.$(params.username);
         if (!userGlo._exists) return 'Invalid login attempt';
-        var credentials = userGlo._getDocument();
-        console.log('credentials: ' + JSON.stringify(credentials));
-        if (!password.matches(params.password, credentials)) return 'Invalid login attempt';
+        var type = userGlo.$('type')._value;
+        if (params.password === '') {
+          if (type !== 'ga') {
+            return 'You must enter your ewdMonitor password';
+          }
+          else {
+            return 'You must enter the current Google Authenticator Code';
+          }
+        }
+        if (type !== 'ga') {
+          var credentials = userGlo._getDocument();
+          //console.log('credentials: ' + JSON.stringify(credentials));
+          if (credentials.type === 'password' && !password.matches(params.password, credentials)) return 'Invalid login attempt';
+        }
+        else {
+          var key = userGlo.$('key')._value;
+          ewd.util.checkGoogleAuthenticatorCode(params.password, key, function(result) {
+            if (result.error) {
+              ewd.sendWebSocketMsg({
+                type: 'EWD.form.login',
+                ok: false,
+                error: result.error,
+                finished: true
+              });
+            }
+            else {
+              if (result.match) {
+                ewd.sendWebSocketMsg({
+                  type: 'EWD.form.login',
+                  ok: true
+                });
+                ewd.session.setAuthenticated();
+                ewd.sendWebSocketMsg({
+                  type: 'loggedIn',
+                  message: {
+                    ok: true
+                  },
+                  finished: true
+                });
+              }
+              else {
+                ewd.sendWebSocketMsg({
+                  type: 'EWD.form.login',
+                  ok: false,
+                  error: 'Invalid code!',
+                  finished: true
+                });
+              }
+            }
+          });
+          return {finished: false}; 
+        } 
       }
       else {
         if (params.username === '') return 'You must enter the EWD.js Management password';
@@ -109,32 +160,105 @@ module.exports = {
       return users;
     },
 
+    getUser: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
+      var user = new ewd.mumps.GlobalNode('zewdMonitor', ['login', params.username])._getDocument();
+      return {
+        type: user.type,
+        appName: user.appName || ''
+      };
+    },
+
     addUser: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
       if (params.username === '') return {error: 'You must enter a username'};
-      if (params.password === '') return {error: 'You must enter a password'};
+      if (params.authType !== 'ga' && params.password === '') return {error: 'You must enter a password'};
       if (params.mgtPassword === '') return {error: 'You must enter the EWD.js management password'};
       if (params.mgtPassword !== params.managementPassword) return {error: 'Incorrect EWD.js management password'};
       var loginGlo = new ewd.mumps.GlobalNode('zewdMonitor', ['login', params.username]);
       if (loginGlo._exists) {
         return {error: 'Username already exists'};
       }
-      var hashObj = password.encrypt(params.password);
-      loginGlo._setDocument(hashObj);
-      return {ok: true};
+      var authType = params.authType;
+      if (authType === 'password') {
+        var hashObj = password.encrypt(params.password);
+        loginGlo._setDocument(hashObj);
+        return {ok: true};
+      }
+      if (authType === 'ga') {
+        // create Google Authenticator key
+        var appName = params.appName;
+        if (appName === '') appName = 'ewdMonitor';
+        var results = se.generate_key({
+          length: 20,
+          google_auth_qr: true,
+          name: appName
+        });
+        ewd.session.$('googleAuthenticator')._setDocument({
+          key: results.base32,
+          username: params.username,
+          appName: appName
+        });
+        return {
+          url: results['google_auth_qr'],
+          key: results.base32
+        };
+      }
+      return {ok: false};
+    },
+
+    confirmQRCode: function(params, ewd) {
+      if (ewd.session.isAuthenticated) {
+        var details = ewd.session.$('googleAuthenticator')._getDocument();
+        var loginGlo = new ewd.mumps.GlobalNode('zewdMonitor', ['login', details.username]);
+        loginGlo._delete();
+        loginGlo._setDocument({
+          type: 'ga',
+          key: details.key,
+          appName: details.appName
+        });
+        return {ok: true};
+      }
     },
 
     changeUserPassword: function(params, ewd) {
+      if (!ewd.session.isAuthenticated) return;
+      var authType = params.authType;
+      if (authType !== 'ga' && params.password === '') return {error: 'You must enter a password'};
       if (params.username === '') return {error: 'Missing username'};
-      if (params.password === '') return {error: 'You did not enter a password'};
       if (params.mgtPassword === '') return {error: 'You must enter the EWD.js management password'};
       if (params.mgtPassword !== params.managementPassword) return {error: 'Incorrect EWD.js management password'};
       var loginGlo = new ewd.mumps.GlobalNode('zewdMonitor', ['login', params.username]);
       if (!loginGlo._exists) {
         return {error: 'Username does not exist'};
       }
-      var hashObj = password.encrypt(params.password);
-      loginGlo._setDocument(hashObj);
-      return {ok: true};
+
+      if (authType === 'password') {
+        var hashObj = password.encrypt(params.password);
+        loginGlo._delete();
+        loginGlo._setDocument(hashObj);
+        return {ok: true};
+      }
+      if (authType === 'ga') {
+        // create Google Authenticator key
+        var appName = params.appName;
+        if (appName === '') appName = 'ewdMonitor';
+        var results = se.generate_key({
+          length: 20,
+          google_auth_qr: true,
+          name: appName
+        });
+        ewd.session.$('googleAuthenticator')._setDocument({
+          key: results.base32,
+          username: params.username,
+          appName: appName
+        });
+        return {
+          url: results['google_auth_qr'],
+          key: results.base32
+        };
+      }
+      return {ok: false};
     },
 
     deleteUser: function(params, ewd) {
