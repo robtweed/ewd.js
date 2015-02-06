@@ -22,13 +22,15 @@
  | See the License for the specific language governing permissions and      |
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
-Build 13: 5 February 2015
+
+Build 14: 6 February 2015
+
 */
 
 var fs = require('fs');
 var crypto = require("crypto");
-var se = require('speakeasy');
-var ntp = require('ntp-client');
+//var se = require('speakeasy');
+//var ntp = require('ntp-client');
 
 var password = {
   encrypt: function(password) {
@@ -97,7 +99,7 @@ module.exports = {
         }
         else {
           var key = userGlo.$('key')._value;
-          ewd.util.checkGoogleAuthenticatorCode(params.password, key, function(result) {
+          ewd.util.googleAuthenticator.checkCode(params.password, key, function(result) {
             if (result.error) {
               ewd.sendWebSocketMsg({
                 type: 'EWD.form.login',
@@ -189,11 +191,14 @@ module.exports = {
         // create Google Authenticator key
         var appName = params.appName;
         if (appName === '') appName = 'ewdMonitor';
+        var results = ewd.util.googleAuthenticator.generateKey(appName);
+        /*
         var results = se.generate_key({
           length: 20,
           google_auth_qr: true,
           name: appName
         });
+        */
         ewd.session.$('googleAuthenticator')._setDocument({
           key: results.base32,
           username: params.username,
@@ -243,11 +248,14 @@ module.exports = {
         // create Google Authenticator key
         var appName = params.appName;
         if (appName === '') appName = 'ewdMonitor';
+        var results = ewd.util.googleAuthenticator.generateKey(appName);
+        /*
         var results = se.generate_key({
           length: 20,
           google_auth_qr: true,
           name: appName
         });
+        */
         ewd.session.$('googleAuthenticator')._setDocument({
           key: results.base32,
           username: params.username,
