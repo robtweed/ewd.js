@@ -32,6 +32,31 @@ var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
 var util = require('util');
+var crypto = require("crypto");
+
+var password = {
+  encrypt: function(password) {
+    if (!password || password === '') return {error: 'Missing or invalid password'};
+    var salt = crypto.randomBytes(64);
+    var iterations = 10000;
+    var keyLength = 64;
+    var encrypted = crypto.pbkdf2Sync(password, salt, iterations, keyLength);
+    return {
+      type: 'password',
+      hash: encrypted.toString('base64'),
+      salt: salt.toString('base64')
+    };
+  },
+  matches: function(fromUser, credentials) {
+    var iterations = 10000;
+    var keyLength = 64;
+    var salt = new Buffer(credentials.salt, 'base64');
+    var encrypted = crypto.pbkdf2Sync(fromUser, salt, iterations, keyLength);
+    encrypted = encrypted.toString('base64');
+    if (credentials.hash === encrypted) return true;
+    return false;
+  }
+};
 
 
 var restRequest = function(params, ewd, callback) {
@@ -111,13 +136,89 @@ var restRequest = function(params, ewd, callback) {
 module.exports = {
   onMessage: {
 
+    getLoginType: function(params, ewd) {
+      var loginGlo = new ewd.mumps.GlobalNode('zewdMonitor', ['login']);
+      if (loginGlo._exists) {
+        return {file: 'login.html'};
+      }
+      else {
+        return {file: 'initialLogin.html'};
+      }
+    },
+
     'EWD.form.login': function(params, ewd) {
-      if (params.username === '') return 'You must enter the Management Password for this EWD.js system';
-      if (params.username !== ewd.session.$('ewd_password')._value) return 'Invalid password';
+      var loginGlo = new ewd.mumps.GlobalNode('zewdMonitor', ['login']);
+      if (loginGlo._exists) { 
+        if (params.username === '') return 'You must enter your ewdMonitor username';
+        var userGlo = loginGlo.$(params.username);
+        if (!userGlo._exists) return 'Invalid login attempt';
+        var type = userGlo.$('type')._value;
+        if (params.password === '') {
+          if (type !== 'ga') {
+            return 'You must enter your ewdMonitor password';
+          }
+          else {
+            return 'You must enter the current Google Authenticator Code';
+          }
+        }
+        if (type !== 'ga') {
+          var credentials = userGlo._getDocument();
+          //console.log('credentials: ' + JSON.stringify(credentials));
+          if (credentials.type === 'password' && !password.matches(params.password, credentials)) return 'Invalid login attempt';
+        }
+        else {
+          var key = userGlo.$('key')._value;
+          ewd.util.checkGoogleAuthenticatorCode(params.password, key, function(result) {
+            if (result.error) {
+              ewd.sendWebSocketMsg({
+                type: 'EWD.form.login',
+                ok: false,
+                error: result.error,
+                finished: true
+              });
+            }
+            else {
+              if (result.match) {
+                ewd.sendWebSocketMsg({
+                  type: 'EWD.form.login',
+                  ok: true
+                });
+                ewd.session.setAuthenticated();
+                ewd.sendWebSocketMsg({
+                  type: 'loggedIn',
+                  message: {
+                    ok: true
+                  },
+                  finished: true
+                });
+              }
+              else {
+                ewd.sendWebSocketMsg({
+                  type: 'EWD.form.login',
+                  ok: false,
+                  error: 'Invalid code!',
+                  finished: true
+                });
+              }
+            }
+          });
+          return {finished: false}; 
+        } 
+      }
+      else {
+        if (params.username === '') return 'You must enter the EWD.js Management password';
+        if (params.username !== params.managementPassword) return 'Invalid password';
+      }
 
       ewd.session.setAuthenticated();
-      return '';
-    }, 
+      ewd.sendWebSocketMsg({
+        type: 'loggedIn',
+        message: {
+          ok: true
+        }
+      });
+      return ''; 
+    },
 
     getServers: function(params, ewd) {
       if (ewd.session.isAuthenticated) {

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 13: 6 January 2015
+Build 14: 5 February 2015
 
 */
 
@@ -156,6 +156,14 @@ EWD.application = {
       };
       EWD.memory.plot['cpPid' + pid] = [];
       return html;
+    };
+
+    EWD.addChildProcessToDisplay = function(pid, debug) {
+      var html = EWD.addChildProcessToTable(pid, debug);
+      $('#childProcessTable tbody').append(html);
+      EWD.enablePopovers();
+      EWD.enableNotAvailable();
+      $('[data-toggle="tooltip"]').tooltip();
     };
 
     EWD.clearList = function(listId) {
@@ -804,10 +812,40 @@ EWD.application = {
               });
             }
           });
+          $(document).on('change', 'input:radio[id="authType-pw"]', function (event) {
+            $('#users-auth-pw').show();
+            $('#users-auth-pw2').show();
+            $('#users-auth-ga').hide();
+          });
+          $(document).on('change', 'input:radio[id="authType-ga"]', function (event) {
+            $('#users-auth-pw').hide();
+            $('#users-auth-pw2').hide();
+            $('#users-auth-ga').show();
+          });
+          $(document).on('change', 'input:radio[id="authType-edit-pw"]', function (event) {
+            $('#users-edit-pw').show();
+            $('#users-edit-pw2').show();
+            $('#users-edit-ga').hide();
+          });
+          $(document).on('change', 'input:radio[id="authType-edit-ga"]', function (event) {
+            $('#users-edit-pw').hide();
+            $('#users-edit-pw2').hide();
+            $('#users-edit-ga').show();
+            var appName = $('#users_edit_appName').val();
+            if (appName === '') $('#users_edit_appName').val('ewdMonitor');
+          });
+
+          $('#authType-pw').prop('checked', true);
+          $('#users_appName').val('ewdMonitor');          
+          $('#users_edit_appName').val('ewdMonitor');    
           EWD.getUsers();
           $('#users_AddBtn').on('click', function(e) {
             $('#addUsersPanel').show();
             $('#manageUsersPanel').hide();
+            $("#users_mgtPassword").val('');
+            $("#users_username").val('');
+            $("#users_password").val('');
+            $("#users_password2").val('');
           });
           $('#users_BackBtn').on('click', function(e) {
             $('#addUsersPanel').hide();
@@ -826,11 +864,20 @@ EWD.application = {
             $('#editUsersPanel').hide();
             $('#manageUsersPanel').show();
           });
+
           $('#users_EditSaveBtn').on('click', function(e) {
+            var authType = $('input[name=authTypeEdit]:checked', '#editUsersPanel').val();
             var password = $("#users_edit_password").val();
-            if (password === '') {
-              toastr.error('You did not enter a new password');
-              return;
+            if (authType === 'pw') {
+              if ( password === '') {
+                toastr.error('You did not enter a new password');
+                return;
+              }
+              var password2 = $("#users_edit_password2").val();
+              if (password !== password2) {
+                toastr.error('Passwords do not match');
+                return;
+              }
             }
             var mgtPassword = $("#users_edit_mgtPassword").val();
             if (mgtPassword === '') {
@@ -842,6 +889,8 @@ EWD.application = {
               params: {
                 username: EWD.application.selectedUsername,
                 password: password,
+                authType: authType,
+                appName: $('#users_edit_appName').val() || '',
                 mgtPassword: mgtPassword
               },
               done: function(messageObj) {
@@ -853,17 +902,60 @@ EWD.application = {
                   $('#editUsersPanel').hide();
                   $('#manageUsersPanel').show();
                 }
+                if (messageObj.message.url) {
+                  $('#editUsersPanel').hide();
+                  $('#googleQRCodePanel').show();
+                  $('#usersQRCode').attr('src', messageObj.message.url);
+                  $('#usersQRCodeKey').text('Key: ' + messageObj.message.key);
+                }
               }
             });
           });
+
           $('#users_EditBtn').on('click', function(e) {
             if (EWD.application.selectedUsername !== '') {
-              $('#manageUsersPanel').hide();
-              $('#editUsersPanel').show();
-              $('#users_edit_username').val(EWD.application.selectedUsername);
+              EWD.sockets.sendMessage({
+                type: 'getUser',
+                params: {
+                  username: EWD.application.selectedUsername
+                },
+                done: function(messageObj) {
+                  $('#manageUsersPanel').hide();
+                  $('#editUsersPanel').show();
+                  $("#users_edit_mgtPassword").val('');
+                  $("#users_edit_password").val('');
+                  $("#users_edit_password2").val('');
+                  $('#users_edit_username').val(EWD.application.selectedUsername);
+                  var type = messageObj.message.type;
+                  if (type === 'ga') {
+                    $('#users-edit-pw').hide();
+                    $('#users-edit-pw2').hide();
+                    $('#users-edit-ga').show();
+                    $('#authType-edit-ga').prop('checked', true);
+                  }
+                  else {
+                    $('#users-edit-pw').show();
+                    $('#users-edit-pw2').show();
+                    $('#users-edit-ga').hide();
+                    $('#authType-edit-pw').prop('checked', true);
+                  }
+
+                }
+              });
             }
           });
+          $('#usersQRCodeBtn').on('click', function(e) {
+            EWD.sockets.sendMessage({
+              type: 'confirmQRCode',
+              done: function(messageObj) {
+                $('#manageUsersPanel').show();
+                $('#googleQRCodePanel').hide();
+                EWD.getUsers();
+              }
+            });
+          });
           $('#users_SaveBtn').on('click', function(e) {
+            var authType = $('input[name=authType]:checked', '#addUsersPanel').val();
             var mgtPassword = $("#users_mgtPassword").val();
             if (mgtPassword === '') {
               toastr.error('You must enter the EWD.js Management Password');
@@ -875,15 +967,24 @@ EWD.application = {
               return;
             }
             var password = $("#users_password").val();
-            if (password === '') {
-              toastr.error('You must enter a password');
-              return;
+            if (authType !== 'ga') {
+              if (password === '') {
+                toastr.error('You must enter a password');
+                return;
+              }
+              var pw2 = $("#users_password2").val();
+              if (pw2 !== password) {
+                toastr.error('Passwords do not match');
+                return;
+              }
             }
             EWD.sockets.sendMessage({
               type: 'addUser',
               params: {
                 username: username,
                 password: password,
+                authType: authType,
+                appName: $('#users_appName').val() || '',
                 mgtPassword: mgtPassword
               },
               done: function(messageObj) {
@@ -895,6 +996,13 @@ EWD.application = {
                   $('#addUsersPanel').hide();
                   $('#manageUsersPanel').show();
                   EWD.getUsers();
+                  return;
+                }
+                if (messageObj.message.url) {
+                  $('#addUsersPanel').hide();
+                  $('#googleQRCodePanel').show();
+                  $('#usersQRCode').attr('src', messageObj.message.url);
+                  $('#usersQRCodeKey').text('Key: ' + messageObj.message.key);
                 }
               }
             });
@@ -1993,6 +2101,26 @@ EWD.application = {
     },
 
     memory: function(messageObj) {
+      // remove any child processes from display that no longer exist
+      var pid;
+      for (var id in EWD.memory) {
+        if (id.indexOf('cpPid') !== -1) {
+          pid = id.split('cpPid')[1];
+          if (!messageObj.childProcess[pid]) {
+            $('#cpRow' + pid).remove();
+            delete EWD.memory.plot['cpPid' + pid];
+            delete EWD.memory['cpPid' + pid];
+          }
+        }
+      }
+
+      // add any new child processes to the display
+      for (pid in messageObj.childProcess) {
+        if (!EWD.memory['cpPid' + pid]) {
+          EWD.addChildProcessToDisplay(pid, false);
+        }
+      }
+
       $('#uptime').text(messageObj.uptime);
       if (EWD.application.loggedIn) {
         EWD.memory.master = messageObj;

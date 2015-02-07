@@ -71,8 +71,29 @@
               <input type="text" class="form-control" id="users_username" placeholder="Enter a new username" />
             </div>
             <div class="form-group">
-              <label for="users_password">Password</label>
+              <label>Authenticate using: </label>
+            </div>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="authType" id="authType-pw" value="password" />
+                Password
+              </label>
+            </div>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="authType" id="authType-ga" value="ga" />
+                Google Authenticator
+              </label>
+            </div>
+            <div class="form-group" id="users-auth-pw">
               <input type="password" class="form-control" id="users_password" placeholder="Enter a password for the new user" />
+            </div>
+            <div class="form-group" id="users-auth-pw2">
+              <input type="password" class="form-control" id="users_password2" placeholder="Confirm password" />
+            </div>
+            <div class="form-group" id="users-auth-ga" style="display:none">
+              <label for="users_username">Application Name</label>
+              <input type="text" class="form-control" id="users_appName" placeholder="Google Authenticator Application Name" />
             </div>
           </div>
         </div>
@@ -110,13 +131,59 @@
               <label for="users_edit_mgtPassword">Management Password: &nbsp;</label>
               <input type="password" class="form-control" id="users_edit_mgtPassword" placeholder="EWD.js Management Password" value=""/>
             </div>
+
             <div class="form-group">
+              <label>Authenticate using: </label>
+            </div>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="authTypeEdit" id="authType-edit-pw" value="password" />
+                Password
+              </label>
+            </div>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="authTypeEdit" id="authType-edit-ga" value="ga" />
+                Google Authenticator
+              </label>
+            </div>
+
+            <div class="form-group" id="users-edit-pw">
               <label for="users_password">New Password</label>
               <input type="password" class="form-control" id="users_edit_password" placeholder="Enter a new password for the user" />
+            </div>
+            <div class="form-group" id="users-edit-pw2">
+              <label for="users_password">Confirm Password</label>
+              <input type="password" class="form-control" id="users_edit_password2" placeholder="Re-enter password" />
+            </div>
+            <div class="form-group" id="users-edit-ga" style="display:none">
+              <label for="users_username">Application Name</label>
+              <input type="text" class="form-control" id="users_edit_appName" placeholder="Google Authenticator Application Name" />
             </div>
           </div>
         </div>
 
+      </div>
+    </div>
+
+    <div id="googleQRCodePanel" class="panel panel-primary collapse">
+      <div class="panel-heading">
+        <h3 class="panel-title" id="usersQRCode-title">Google Authenticator Registration</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <center>
+              <h4>Scan the QR Code below using the Google Authenticator App, or manually enter the key</h4>
+              <h4>Click the button when you've registered the application on Google Authenticator</h4>
+              <iframe id="usersQRCode" src="javascript: false;" width="200" height="200" frameborder="0"></iframe>
+              <h4 id="usersQRCodeKey"></h4>
+              <button id="usersQRCodeBtn" type="button" class="btn btn-primary">
+               OK
+              </button>
+            </center>
+          </div>
+        </div>
       </div>
     </div>
 
