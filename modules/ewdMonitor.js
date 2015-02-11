@@ -474,7 +474,8 @@ module.exports = {
         ewdSessions._forEach(function(sessid, session) {
           var appName = session.$('ewd_appName')._value;
           var expiry = session.$('ewd_sessionExpiry')._value;
-          expiry = (expiry - 4070908800) * 1000;
+          //expiry = (expiry - 4070908800) * 1000;
+          expiry = expiry * 1000;
           var expireDate = new Date(expiry);
           rowNo++;
           var currentSession = (sessid === mySessid);
