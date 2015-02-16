@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ewdFederatorMgr: EWD Federator Management Utility                        |
  |                                                                          |
- | Copyright (c) 2013-14 M/Gateway Developments Ltd,                        |
+ | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
  | Reigate, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 1: 12 November 2014
+Build 2: 16 February 2015
 
 */
 
@@ -73,7 +73,9 @@ var restRequest = function(params, ewd, callback) {
     host: restServer.host,
     port: restServer.port,
     method: params.method || 'GET',
-    path: params.path
+    path: params.path,
+    agent: false,
+    rejectUnauthorized: false // set this to true if remote site uses proper SSL certs
   }
   if (queryObj && queryObj !== '') {
     options.path = options.path + '?' + querystring.stringify(queryObj);

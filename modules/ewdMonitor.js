@@ -23,7 +23,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 14: 6 February 2015
+Build 15: 11 February 2015
 
 */
 
@@ -474,8 +474,9 @@ module.exports = {
         ewdSessions._forEach(function(sessid, session) {
           var appName = session.$('ewd_appName')._value;
           var expiry = session.$('ewd_sessionExpiry')._value;
-          expiry = (expiry - 4070908800) * 1000;
-          var expireDate = new Date(expiry);
+          // thanks to Ward DeBacker for this bug-fix:
+          //expiry = (expiry - 4070908800) * 1000;
+          var expireDate = new Date(expiry * 1000);
           rowNo++;
           var currentSession = (sessid === mySessid);
           data.push({
