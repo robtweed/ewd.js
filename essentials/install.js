@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
- Build 2: 2 March 2015
+ Build 3: 2 March 2015
 
 */
 
@@ -216,6 +216,54 @@ var installExtras = function(path) {
 //
 // *********************************************************************
 
+
+// Silent Mode: Try to read config options from a file named silent.js
+
+/* 
+  eg file contents might be:
+     {
+       "silent": true,
+       "extras": false
+     }
+*/
+
+var installPath;
+var params = {
+  silent: false
+};
+var paramsFile = '../../silent.js';
+if( fs.existsSync(paramsFile) ) {
+  try {
+    params = JSON.parse(fs.readFileSync(paramsFile, 'utf8'));
+    fs.unlinkSync(paramsFile);
+  }
+  catch(err) {
+    // fall through in silent mode
+  }
+}
+
+if (params.silent) {
+  if (!params.installPath) {
+    process.chdir('../..');
+    installPath = process.cwd();
+  }
+  else {
+    installPath = params.installPath;
+  }
+  installEWD(installPath);
+  if (params.extras) {
+    installExtras(installPath);
+  }
+  else {
+    var extrasPath = installPath + '/node_modules/ewdjs/extras';
+    deleteDirectory(extrasPath);
+  }
+  tidyUp(installPath);
+  process.chdir(installPath);
+  return;
+}
+
+// Interactive mode:
 
 var interface = readline.createInterface({
   input: process.stdin,
