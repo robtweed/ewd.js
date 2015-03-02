@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
- Build 1: 27 February 2015
+ Build 2: 2 March 2015
 
 */
 
@@ -237,8 +237,10 @@ interface.question('Install EWD.js to directory path (' + process.cwd() + '): ',
     if (answer === 'Y' || answer === 'n') {
       installExtras(installPath);
     }
-    var extrasPath = installPath + '/node_modules/ewdjs/extras';
-    deleteDirectory(extrasPath);
+    else {
+      var extrasPath = installPath + '/node_modules/ewdjs/extras';
+      deleteDirectory(extrasPath);
+    }
     tidyUp(installPath);
     interface.close();
     process.chdir(installPath);
