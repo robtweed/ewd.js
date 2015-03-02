@@ -1,6 +1,7 @@
 # EWD.js
  
-Node.js-based Application Framework for MongoDB, Cach&#233;, GlobalsDB and GT.M
+Node.js-based Application Framework and Application Server/Container for use with Cach&#233;, GlobalsDB, GT.M and 
+MongoDB databases
 
 Rob Tweed <rtweed@mgateway.com>  
 9 May 2014, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
