@@ -1,7 +1,35 @@
+/*
+
+ ----------------------------------------------------------------------------
+ | EWD.js: Browser-side main logic for EWD.js Applications                  |
+ |                                                                          |
+ | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
+ | Reigate, Surrey UK.                                                      |
+ | All rights reserved.                                                     |
+ |                                                                          |
+ | http://www.mgateway.com                                                  |
+ | Email: rtweed@mgateway.com                                               |
+ |                                                                          |
+ |                                                                          |
+ | Licensed under the Apache License, Version 2.0 (the "License");          |
+ | you may not use this file except in compliance with the License.         |
+ | You may obtain a copy of the License at                                  |
+ |                                                                          |
+ |     http://www.apache.org/licenses/LICENSE-2.0                           |
+ |                                                                          |
+ | Unless required by applicable law or agreed to in writing, software      |
+ | distributed under the License is distributed on an "AS IS" BASIS,        |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. |
+ | See the License for the specific language governing permissions and      |
+ |  limitations under the License.                                          |
+ ----------------------------------------------------------------------------
+
+*/
+
 var EWD = {
   version: {
-    build: 22,
-    date: '28 November 2014'
+    build: 23,
+    date: '20 February 2015'
   }, 
   trace: false,
   initialised: false,
@@ -308,6 +336,13 @@ var EWD = {
     var socket = io.connect();
     socket.on('disconnect', function() {
       if (EWD.sockets.log) console.log('socket.io disconnected');
+      if (EWD.application.onMessage.error) {
+        EWD.application.onMessage.error({
+          type: 'error',
+          messageType: 'EWD.socket.disconnected',
+          error: 'Socket disconnected'
+        });
+      }
     });
 
     socket.on('message', function(obj){
@@ -400,7 +435,19 @@ var EWD = {
                 });
               }
               else {
-                io.json.send(JSON.stringify(params)); 
+                if (io.connected) {
+                  io.json.send(JSON.stringify(params)); 
+                }
+                else {
+                  if (EWD.sockets.log) console.log('Socket is disconnected and unavilable for use');
+                  if (EWD.application.onMessage.error) {
+                    EWD.application.onMessage.error({
+                      type: 'error',
+                      messageType: params.type,
+                      error: 'Socket disconnected'
+                    });
+                  }
+                }
               }
             }
           };
