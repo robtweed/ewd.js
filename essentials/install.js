@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
- Build 3: 2 March 2015
+ Build 4: 3 March 2015
 
 */
 
@@ -282,7 +282,7 @@ interface.question('Install EWD.js to directory path (' + process.cwd() + '): ',
   console.log("If you're new to EWD.js or want to create a test environment, enter Y");
   console.log("If you're an experienced user or this is a production environment, enter N");
   interface.question("Enter Y/N: ", function(answer) {
-    if (answer === 'Y' || answer === 'n') {
+    if (answer === 'Y' || answer === 'y') {
       installExtras(installPath);
     }
     else {
