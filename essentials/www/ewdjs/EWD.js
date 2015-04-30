@@ -28,8 +28,8 @@
 
 var EWD = {
   version: {
-    build: 23,
-    date: '20 February 2015'
+    build: 24,
+    date: '30 April 2015'
   }, 
   trace: false,
   initialised: false,
@@ -238,6 +238,68 @@ var EWD = {
   sockets: {
     log: false,
     handlerFunction: {},
+
+    // Simon Tweed's pub/sub additions
+    // object store for socket message events - used by on/off/emit:
+    events:{},
+
+    /** 
+     * Binds a callback to a socket message type
+     * @param {string} messageType - Socket message type name to bind callback to
+     * @param {function} callback  - Callback to bind to message type
+     */
+    on: function(messageType, callback) {
+      if (!this.events[messageType]) this.events[messageType] = [];
+      this.events[messageType].push(callback);
+    },
+
+    /**
+     * Unbinds callback(s) from a socket message type
+     *
+     * USAGE:
+     * EWD.sockets.off(messageType) 
+     * removes all event callbacks for a socket message type
+     *
+     * EWD.sockets.off(messageType, callback) 
+     * removes a specific event callback for a socket message type
+     *
+     * @param {string} messageType - socket message type name
+     * @param {function} [callback] - Specific callback to remove from a message type
+     */
+    off: function(messageType, callback) {
+      if (typeof callback === 'function') {
+        if (!this.events[messageType]) {
+          return
+        }
+        else if (this.events[messageType]) {
+          for (var i = 0; i < this.events[messageType].length; i++) {
+            if (this.events[messageType][i] === callback) {
+              this.events[messageType].splice(i,1);
+            }
+          }
+        }
+      }
+      else {
+        this.events[messageType] = [];
+      }
+    },
+
+    /**
+     * Invokes all callbacks associated with a socket message type. <br>
+     * Invoked automatically when a socket message is recieved from the server <br>
+     *
+     * @param {string} messageType - message type to invoke callbacks for
+     * @param {object} data - data object passed to callback(s)
+     */
+    emit: function(messageType, data) {
+      if (!this.events[messageType] || this.events[messageType].length < 1) return;
+      data = data || {};
+      for (var i = 0; i < this.events[messageType].length; i++) {
+        this.events[messageType][i](data);
+      }
+    },
+    // End of Simon Tweed's additions
+
     keepAlive: function(mins) {
       EWD.sockets.timeout = mins;
       setTimeout(function() {
@@ -358,7 +420,7 @@ var EWD = {
         if (socket && obj.type === 'EWD.connected') {
           var json = {
             type: 'EWD.register', 
-            application: EWD.application,
+            application: EWD.application
           };
           socket.json.send(JSON.stringify(json));
           return;
@@ -458,6 +520,13 @@ var EWD = {
         if (EWD.onSocketsReady) EWD.onSocketsReady();
         return;
       }
+
+      // Simon Tweed's pub-sub enhancement:
+
+      EWD.sockets.emit(obj.type, obj);
+
+      // End of Simon's enhancement
+
       if (obj.message) {
         var payloadType = obj.message.payloadType;
         if (payloadType === 'innerHTMLReplace') {
