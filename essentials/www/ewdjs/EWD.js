@@ -28,8 +28,8 @@
 
 var EWD = {
   version: {
-    build: 24,
-    date: '30 April 2015'
+    build: 25,
+    date: '01 July 2015'
   }, 
   trace: false,
   initialised: false,
@@ -682,7 +682,7 @@ var EWD = {
   }
 };
 
-if (typeof $ !== 'undefined') {
+if (typeof $ !== 'undefined' && !EWD.customStart ) {
   $(document).ready( function() {
     EWD.start();
   });
