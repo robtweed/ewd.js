@@ -1,5 +1,31 @@
 ewdjsUtils ; EWD.js Utility methods, functions and tests
  ;
+ ; ----------------------------------------------------------------------------
+ ; | EWD.js                                                                   |
+ ; | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
+ ; | Reigate, Surrey UK.                                                      |
+ ; | All rights reserved.                                                     |
+ ; |                                                                          |
+ ; | http://www.mgateway.com                                                  |
+ ; | Email: rtweed@mgateway.com                                               |
+ ; |                                                                          |
+ ; | Licensed under the Apache License, Version 2.0 (the "License");          |
+ ; | you may not use this file except in compliance with the License.         |
+ ; | You may obtain a copy of the License at                                  |
+ ; |                                                                          |
+ ; |     http://www.apache.org/licenses/LICENSE-2.0                           |
+ ; |                                                                          |
+ ; | Unless required by applicable law or agreed to in writing, software      |
+ ; | distributed under the License is distributed on an "AS IS" BASIS,        |
+ ; | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. |
+ ; | See the License for the specific language governing permissions and      |
+ ; |  limitations under the License.                                          |
+ ; ----------------------------------------------------------------------------
+ ;
+ ; Build 2: 19 August 2015
+ ;
+ ;QUIT
+ ;
  ; External messaging
  ;
  ;  Example of message to be sent to all users of a specific application
@@ -212,6 +238,10 @@ numeric(value)
  i value?1"-."1N.N QUIT 1
  QUIT 0
  ;
+clearSymbolTable() ;
+ k
+ QUIT 1
+ ;
 saveSymbolTable(%zzg) ;
  ; Save Symbol Table to specified global node (%zzg)
  ; %zzg is of form "^gloName(""sub1"",""sub2"")"
@@ -245,4 +275,4 @@ restoreSymbolTable(gloRef) ;
  . . i %zzz'="" m @%zzz=^(%zzz)
  ;
  QUIT $zu(160,0,gloRef)
-
+ ;
