@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 14: 5 February 2015
+Build 15: 06 August 2015
 
 */
 
@@ -2017,7 +2017,7 @@ EWD.application = {
             rootLevel: true,
             sessid: sessid,
             operation: 'sessionData',
-            globalName: '%zewdSession',
+            globalName: EWD.application.sessionGlobal,
             subscripts: ['session', sessid]
           });
         });
@@ -2071,7 +2071,7 @@ EWD.application = {
             rootLevel: true,
             sessid: sessid,
             operation: 'sessionData',
-            globalName: '%zewdSession',
+            globalName: EWD.application.sessionGlobal,
             subscripts: ['session', sessid]
           });
         });
@@ -2170,6 +2170,7 @@ EWD.application = {
         EWD.application.logTo = data.logTo;
         EWD.application.logFile = data.logFile;
         EWD.application.interval = data.interval;
+        EWD.application.sessionGlobal = data.sessionGlobal;
         $('#ewd-system-name').text('Overview: ' + data.name);
         $('#ewd-navbar-title-phone').text(data.name);
         $('#ewd-navbar-title-other').text(data.name);

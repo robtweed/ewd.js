@@ -212,3 +212,37 @@ numeric(value)
  i value?1"-."1N.N QUIT 1
  QUIT 0
  ;
+saveSymbolTable(%zzg) ;
+ ; Save Symbol Table to specified global node (%zzg)
+ ; %zzg is of form "^gloName(""sub1"",""sub2"")"
+ ; %zzg must specify at least one subscript
+ ;
+ k @%zzg
+ i $zv["GT.M" d  QUIT 1
+ . n %zzx,%zzz
+ . s %zzg=$e(%zzg,1,$l(%zzg)-1)
+ . s %zzz="%"
+ . f  s %zzz=$o(@%zzz) q:%zzz=""  d  h 0
+ . . i %zzz="%zzz"!(%zzz="%zzx")!(%zzz="%zzg") q
+ . . s %zzx="m "_%zzg_",%zzz)=@%zzz"
+ . . x %zzx
+ ;
+ QUIT $zu(160,1,%zzg)
+ ;
+restoreSymbolTable(gloRef) ;
+ ; Restore Symbol Table from specified global node
+ ; gloRef is of form "^gloName(""sub1"",""sub2"")"
+ ; gloRef must specify at least one subscript
+ ;
+ k
+ i $zv["GT.M" d  QUIT 1
+ . n %zzx,%zzz
+ . s gloRef=$e(gloRef,1,$l(gloRef)-1)
+ . s %zzz=""
+ . f  d  h 0 q:%zzz=""
+ . . s %zzx="s %zzz=$o("_gloRef_",%zzz))"
+ . . x %zzx
+ . . i %zzz'="" m @%zzz=^(%zzz)
+ ;
+ QUIT $zu(160,0,gloRef)
+
