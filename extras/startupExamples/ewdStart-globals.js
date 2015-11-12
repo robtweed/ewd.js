@@ -14,7 +14,7 @@ of your EWD.js configuration.
 
 */
 
-var ewd = require('ewdjs');
+var ewdjs = require('ewdjs');
 var config = {};
 if (process.argv[2]) config = require(process.argv[2]);
 
@@ -52,4 +52,4 @@ params = {
   }
 };
 
-ewd.start(params);
+ewdjs.start(params);

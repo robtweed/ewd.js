@@ -5,7 +5,7 @@ Example EWD.js Startup file for use with GT.M running on Linux
 
 var config = {};
 if (process.argv[2]) config = require(process.argv[2]);
-var ewd = require('ewdjs');
+var ewdjs = require('ewdjs');
 
 var defaults = {
   port: 8080,
@@ -39,5 +39,5 @@ var params = {
 };
 
 setTimeout(function() {
-  ewd.start(params);
+  ewdjs.start(params);
 },1000);

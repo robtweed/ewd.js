@@ -6,7 +6,7 @@ console.log('db: ' + JSON.stringify(db));
 // Change these parameters to match your GlobalsDB or Cache system:
 
 var ok = db.open({
-  path: '/opt/globalsdb/mgr',
+  path: '/opt/cache/mgr',
   username: '_SYSTEM',
   password: 'SYS',
   namespace: 'USER'

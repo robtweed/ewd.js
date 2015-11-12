@@ -11,7 +11,7 @@ of your EWD.js configuration
 
 */
 
-var ewd = require('ewdjs');
+var ewdjs = require('ewdjs');
 
 var params = {
       //cwd: 'c:\ewdjs',
@@ -30,4 +30,4 @@ var params = {
      }
 };
 
-ewd.start(params);
+ewdjs.start(params);

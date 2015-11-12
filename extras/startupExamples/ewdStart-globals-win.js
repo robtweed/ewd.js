@@ -10,7 +10,7 @@ of your EWD.js configuration
 
 */
 
-var ewd = require('ewdjs');
+var ewdjs = require('ewdjs');
 
 var params = {
       poolSize: 2,
@@ -25,5 +25,5 @@ var params = {
      }
 };
 
-ewd.start(params);
+ewdjs.start(params);
 
