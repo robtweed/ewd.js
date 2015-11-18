@@ -1,7 +1,7 @@
 {
   "name": "ewdjs",
   "description": "EWD.js: Node.js-based Application Framework",
-  "version": "0.106.1",
+  "version": "0.107.0",
   "author": {
     "name": "Rob Tweed",
     "email": "rtweed@mgateway.com"
@@ -29,7 +29,8 @@
     "node-uuid": ">=1.4.2",
     "ntp-client": ">=0.5.3",
     "speakeasy": ">=1.0.3",
-    "graceful-fs": ">=3.0.5"
+    "graceful-fs": ">=3.0.5",
+    "request": ">=2.65.0"
   },
   "licenses": [
     "Apache"

@@ -28,11 +28,12 @@
 
 var EWD = {
   version: {
-    build: 25,
-    date: '01 July 2015'
+    build: 26,
+    date: '17 November 2015'
   }, 
   trace: false,
   initialised: false,
+  messageTransport: 'websockets',
   show: function(id) {
     if (document.getElementById(id) !== null) {
       document.getElementById(id).style.display = '';
@@ -60,6 +61,169 @@ var EWD = {
     };
     if (onFragment) messageObj.done = onFragment; 
     EWD.sockets.sendMessage(messageObj); 
+  },
+  getFragmentResponseHandler: function(obj) {
+        if (obj.message.error) {
+          console.log('ERROR: target fragment ' + obj.message.file + ' could not be loaded');
+          console.log(JSON.stringify(obj));
+          if (obj.message.isServiceFragment) {
+            EWD.application.onFragment[obj.message.file](obj,true);
+          }
+        }
+        if (obj.message.targetId) {
+          // check jQuery is loaded, targetId is valid jQuery selector and selector matches 1+ elements 
+          if (window.jQuery && $(obj.message.targetId) instanceof jQuery && $(obj.message.targetId).length > 0) { // handle a jquery object
+            // inject fragment to each matched element
+            $(obj.message.targetId).each(function(ix,element) {
+              $(element).html(obj.message.content);
+            });
+            // invoke onFragment handler
+            if (EWD.application.onFragment) {
+              if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
+            }
+          }
+          // otherwise use jQuery-less fragment target handling
+          else if (document.getElementById(obj.message.targetId)) { // handle as string id
+            document.getElementById(obj.message.targetId).innerHTML = obj.message.content;
+            if (EWD.application.onFragment) {
+              if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
+            }
+          } 
+        } 
+        return;
+  },
+  /**
+   * Generates a GUID string.
+   * @returns {String} The generated GUID.
+   * @example af8a8416-6e18-a307-bd9c-f2c947bbb3aa
+   * @author Slavik Meltser (slavik@meltser.info).
+   * @link http://slavik.meltser.info/?p=142
+  */
+  guid: function() {
+    function _p8(s) {
+      var p = (Math.random().toString(16)+"000000000").substr(2,8);
+      return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
+    }
+    return _p8() + _p8(true) + _p8(true) + _p8();
+  },
+  ajax: function(params) {
+    if (typeof $ !== 'undefined') {
+      $.ajax({
+        url: '/ajax',
+        type: 'post',
+        data: JSON.stringify(params),
+        dataType: 'json',
+        timeout: 10000
+      })
+      .done(function (data ) {
+        EWD.ajaxResponseHandler(data);
+      });
+    }
+  },
+  ajaxResponseHandler: function(data) {
+    if (data.type === 'EWD.registered') {
+      EWD.onRegistered(data);
+      return;
+    }
+    if (EWD.sockets.log) console.log("onMessage: " + JSON.stringify(data));
+    if (data.type === 'EWD.getFragment') {
+      EWD.getFragmentResponseHandler(data);
+      return;
+    }
+    // invoke the message handler function for returned type
+    if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[data.type]) {
+      EWD.application.onMessage[data.type](data);
+    }
+  },
+  onRegistered: function(obj, socket) {
+    console.log('**** application = ' + EWD.application.name);
+    if (EWD.application.name !== 'ewdMonitor' && obj.messageTransport) EWD.messageTransport = obj.messageTransport;
+    //changed
+    // handle service path
+    // if require
+    // user require config obj.servicepath
+    // SJT Addition for setting up require.js service path 
+
+    if (typeof require === 'function') {
+      // add tailing / to path if necessary
+      if (obj.servicePath.slice(-1) !== '/') obj.servicePath += '/';
+      require.config({
+        baseUrl:obj.servicePath
+      });
+      // expose method to retrieve servicePath
+      EWD.application.getServicePath = function() {
+        return obj.servicePath;
+      };
+    }
+
+    EWD.sockets.sendMessage = (function() {
+      var applicationName = EWD.application.name;
+      delete EWD.application.name;
+      var io;
+      if (typeof socket !== 'undefined') io = socket;
+      var token = obj.token;
+      var ajax = false;
+      if (EWD.messageTransport === 'ajax') ajax = true;
+      var augment = function(params) {
+        params.token = token;
+        if (ajax) {
+          params.ajax = true;
+          if (params.type === 'EWD.getFragment') {
+            params.application = applicationName;
+            delete params.token;
+          }
+        }
+        return params;
+      };
+      return function(params) {
+        if (typeof params.type === 'undefined') {
+          if (EWD.sockets.log) console.log('Message not sent: type not defined');
+        }
+        else {
+          params = augment(params);
+          if (typeof console !== 'undefined') {
+            if (EWD.sockets.log) console.log("sendMessage: " + JSON.stringify(params));
+          }
+          if (params.done) {
+            if (params.type === 'EWD.getFragment') {
+              if (!EWD.application.onFragment) EWD.application.onFragment = {};
+              EWD.application.onFragment[params.params.file] = params.done; 
+            }
+            else {
+              if (!EWD.application.onMessage) EWD.application.onMessage = {};
+              EWD.application.onMessage[params.type] = params.done;
+            }
+            delete params.done;
+          }
+          if (params.ajax) {
+            delete params.ajax;
+            if (EWD.ajax) {
+              EWD.ajax(params);
+              return;
+            }
+          }
+          else {
+            if (io.connected) {
+              io.json.send(JSON.stringify(params)); 
+            }
+            else {
+              if (EWD.sockets.log) console.log('Socket is disconnected and unavilable for use');
+              if (EWD.application.onMessage.error) {
+                EWD.application.onMessage.error({
+                  type: 'error',
+                  messageType: params.type,
+                  error: 'Socket disconnected'
+                });
+              }
+            }
+          }
+        }
+      };
+    })();
+    obj = null;
+    socket = null;
+    EWD.initialised = true;
+    if (EWD.onSocketsReady) EWD.onSocketsReady();
   },
   require: function(options) {
     if (typeof require !== 'function') {
@@ -394,291 +558,192 @@ var EWD = {
         window.parent.postMessage(message, EWD.application.parentOrigin);
       }
     }
+    if (typeof io === 'undefined') {
+      // EWD.js running over Ajax only!
 
-    var socket = io.connect();
-    socket.on('disconnect', function() {
-      if (EWD.sockets.log) console.log('socket.io disconnected');
-      if (EWD.application.onMessage.error) {
-        EWD.application.onMessage.error({
-          type: 'error',
-          messageType: 'EWD.socket.disconnected',
-          error: 'Socket disconnected'
-        });
-      }
-    });
+      EWD.messageTransport = 'ajax';
+      var params = {
+        type: 'EWD.register',
+        clientId: EWD.guid(),
+        application: EWD.application,
+      };
+      EWD.ajax(params);
 
-    socket.on('message', function(obj){
-      if (EWD.sockets.log) {
-        if (obj.type !== 'EWD.registered' && obj.type !== 'consoleText') {
-          console.log("onMessage: " + JSON.stringify(obj));
-        }
-        else if(obj.type !== 'EWD.registered') {
-          console.log('Registered successfully');
-        }
-      }
-      if (EWD.application) {
-        if (socket && obj.type === 'EWD.connected') {
-          var json = {
-            type: 'EWD.register', 
-            application: EWD.application
-          };
-          socket.json.send(JSON.stringify(json));
-          return;
-        }
-      }
-      else {
-        console.log('Unable to register application: EWD.application has not been defined');
-        return;
-      }
-      if (obj.type === 'EWD.registered') {
-        //changed
-        // handle service path
-        // if require
-        // user require config obj.servicepath
-        // SJT Addition for setting up require.js service path 
-
-        if (typeof require === 'function') {
-          // add tailing / to path if necessary
-          if (obj.servicePath.slice(-1) !== '/') obj.servicePath += '/';
-          require.config({
-            baseUrl:obj.servicePath
+    }
+    else {
+      var socket = io.connect();
+      socket.on('disconnect', function() {
+        if (EWD.sockets.log) console.log('socket.io disconnected');
+        if (EWD.application.onMessage.error) {
+          EWD.application.onMessage.error({
+            type: 'error',
+            messageType: 'EWD.socket.disconnected',
+            error: 'Socket disconnected'
           });
-          // expose method to retrieve servicePath
-          EWD.application.getServicePath = function() {
-            return obj.servicePath;
-          };
         }
+      });
 
-        EWD.sockets.sendMessage = (function() {
-          var applicationName = EWD.application.name;
-          delete EWD.application.name;
-          var io = socket;
-          var token = obj.token;
-          var augment = function(params) {
-            params.token = token;
-            return params;
-          };
-          return function(params) {
-            if (typeof params.type === 'undefined') {
-              if (EWD.sockets.log) console.log('Message not sent: type not defined');
-            }
-            else {
-              params = augment(params);
-              if (typeof console !== 'undefined') {
-                if (EWD.sockets.log) console.log("sendMessage: " + JSON.stringify(params));
-              }
-              if (params.done) {
-                if (params.type === 'EWD.getFragment') {
-                  if (!EWD.application.onFragment) EWD.application.onFragment = {};
-                  EWD.application.onFragment[params.params.file] = params.done; 
-                }
-                else {
-                  if (!EWD.application.onMessage) EWD.application.onMessage = {};
-                  EWD.application.onMessage[params.type] = params.done;
-                }
-                delete params.done;
-              }
-              if (params.ajax &&typeof $ !== 'undefined') {
-                delete params.ajax;
-                $.ajax({
-                  url: '/ajax',
-                  type: 'post',
-                  data: JSON.stringify(params),
-                  dataType: 'json',
-                  timeout: 10000
-                })
-                .done(function (data ) {
-                  if (EWD.sockets.log) console.log("onMessage: " + JSON.stringify(data));
-                  // invoke the message handler function for returned type
-                  if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[data.type]) {
-                    EWD.application.onMessage[data.type](data);
-                    data = null;
-                  }
-                });
-              }
-              else {
-                if (io.connected) {
-                  io.json.send(JSON.stringify(params)); 
-                }
-                else {
-                  if (EWD.sockets.log) console.log('Socket is disconnected and unavilable for use');
-                  if (EWD.application.onMessage.error) {
-                    EWD.application.onMessage.error({
-                      type: 'error',
-                      messageType: params.type,
-                      error: 'Socket disconnected'
-                    });
-                  }
-                }
-              }
-            }
-          };
-        })();
-        obj = null;
-        socket = null;
-        EWD.initialised = true;
-        if (EWD.onSocketsReady) EWD.onSocketsReady();
-        return;
-      }
-
-      // Simon Tweed's pub-sub enhancement:
-
-      EWD.sockets.emit(obj.type, obj);
-
-      // End of Simon's enhancement
-
-      if (obj.message) {
-        var payloadType = obj.message.payloadType;
-        if (payloadType === 'innerHTMLReplace') {
-          var replacements = obj.message.replacements;
-          var replacement;
-          var prefix;
-          for (var i = 0; i < replacements.length; i++) {
-            replacement = replacements[i];
-            prefix = replacement.prefix || '';
-            for (var idName in replacement.ids) {
-              document.getElementById(prefix + idName).innerHTML = replacement.ids[idName];
-            }
+      socket.on('message', function(obj){
+        if (EWD.sockets.log) {
+          if (obj.type !== 'EWD.registered' && obj.type !== 'consoleText') {
+            console.log("onMessage: " + JSON.stringify(obj));
+          }
+          else if(obj.type !== 'EWD.registered') {
+            console.log('Registered successfully');
           }
         }
-        if (payloadType === 'bootstrap') {
-          var action = obj.message.action;
-          if (action === 'replaceTables') {
-            var tables = obj.message.tables;
-            var tableNo;
-            var table;
-            var i;
-            var html;
-            var tableTag;
-            var columns;
-            var colNo;
-            var row;
-            for (tableNo = 0; tableNo < tables.length; tableNo++) {
-              table = tables[tableNo];
-              tableTag = document.getElementById(table.id);
-              html = '<thead><tr>';
-              columns = EWD.bootstrap.table[table.id].columns;
-              for (i = 0; i < columns.length; i++) {
-                if (columns[i].heading !== '') html = html + '<th>' + columns[i].heading + '</th>'; 
-              }
-              html = html + '</tr></thead>';
-              html = html + '<tbody>';
-              for (i = 0; i < table.content.length; i++) {
-                row = table.content[i];
-                html = html + '<tr>';
-                for (colNo = 0; colNo < columns.length; colNo++) {
-                  html = html + '<td>' + row[columns[colNo].id] + '</td>';
-                }
-                html = html + '</tr>';
-              }
-              html = html + '</tbody>';
-              tableTag.innerHTML = html;
-            } 
-            if (typeof EWD.application.onReplacedTables === "function") { // invoke onReplaceTables() after tables are built
-              EWD.application.onReplacedTables();
-            }
+        if (EWD.application) {
+          if (socket && obj.type === 'EWD.connected') {
+            var json = {
+              type: 'EWD.register', 
+              application: EWD.application
+            };
+            socket.json.send(JSON.stringify(json));
+            return;
           }
-        }
-      }
-      if (obj.type.indexOf('EWD.form.') !== -1) {
-        if (obj.error) {
-          var alertTitle = 'Form Error';
-          if (obj.alertTitle) alertTitle = obj.alertTitle;
-          if (EWD.application.framework === 'extjs') {
-            Ext.Msg.alert(alertTitle, obj.error);
-          }
-          else if (EWD.application.framework === 'bootstrap') {
-            if (typeof toastr !== 'undefined') {
-              toastr.clear();
-              toastr.error(obj.error);
-            }
-            else {
-              if (EWD.sockets.log) console.log("error = " + obj.error);
-              $('#' + EWD.application.popover.buttonId).popover('show');
-              $('#' + EWD.application.popover.container).find('div.popover-content').html(obj.error);
-            }
-          }
-          else {
-            alert(obj.error);
-          }
-          return;
         }
         else {
-          if (EWD.application.framework === 'bootstrap') {
-            $('#loginBtn').popover('hide');
-          }
+          console.log('Unable to register application: EWD.application has not been defined');
+          return;
         }
-      }
-      if (obj.type.indexOf('EWD.error') !== -1) {
-        if (obj.error) {
-          if (EWD.trace) console.log(obj.error);
+        if (obj.type === 'EWD.registered') {
+          EWD.onRegistered(obj, socket);
+          return;
         }
-        return;
-      }
-      // SJT New additions for jQuery selector support for fragment target
-      if (obj.type === 'EWD.getFragment') {
-        if (obj.message.error) {
-          console.log('ERROR: target fragment ' + obj.message.file + ' could not be loaded');
-          console.log(JSON.stringify(obj));
-          if (obj.message.isServiceFragment) {
-            EWD.application.onFragment[obj.message.file](obj,true);
-          }
-        }
-        if (obj.message.targetId) {
-          // check jQuery is loaded, targetId is valid jQuery selector and selector matches 1+ elements 
-          if (window.jQuery && $(obj.message.targetId) instanceof jQuery && $(obj.message.targetId).length > 0) { // handle a jquery object
-            // inject fragment to each matched element
-            $(obj.message.targetId).each(function(ix,element) {
-              $(element).html(obj.message.content);
-            });
-            // invoke onFragment handler
-            if (EWD.application.onFragment) {
-              if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
+
+        // Simon Tweed's pub-sub enhancement:
+  
+        EWD.sockets.emit(obj.type, obj);
+ 
+        // End of Simon's enhancement
+
+        if (obj.message) {
+          var payloadType = obj.message.payloadType;
+          if (payloadType === 'innerHTMLReplace') {
+            var replacements = obj.message.replacements;
+            var replacement;
+            var prefix;
+            for (var i = 0; i < replacements.length; i++) {
+              replacement = replacements[i];
+              prefix = replacement.prefix || '';
+              for (var idName in replacement.ids) {
+                document.getElementById(prefix + idName).innerHTML = replacement.ids[idName];
+              }
             }
           }
-          // otherwise use jQuery-less fragment target handling
-          else if (document.getElementById(obj.message.targetId)){ // handle as string id
-          document.getElementById(obj.message.targetId).innerHTML = obj.message.content;
-          if (EWD.application.onFragment) {
-            if (EWD.application.onFragment[obj.message.file]) EWD.application.onFragment[obj.message.file](obj);
-          }
-        } 
-        } 
-        return;
-      }
-      if (obj.type.indexOf('EWD.inject') !== -1) {
-        if (obj.js) {
-          if (EWD.trace) console.log(obj.js);
-          try {
-            eval(obj.js);
-            if (obj.fn) eval(obj.fn);
-          }
-          catch(error) {
-            if (EWD.trace) {
-              console.log('EWD.inject failed:');
-              console.log(error);
+          if (payloadType === 'bootstrap') {
+            var action = obj.message.action;
+            if (action === 'replaceTables') {
+              var tables = obj.message.tables;
+              var tableNo;
+              var table;
+              var i;
+              var html;
+              var tableTag;
+              var columns;
+              var colNo;
+              var row;
+              for (tableNo = 0; tableNo < tables.length; tableNo++) {
+                table = tables[tableNo];
+                tableTag = document.getElementById(table.id);
+                html = '<thead><tr>';
+                columns = EWD.bootstrap.table[table.id].columns;
+                for (i = 0; i < columns.length; i++) {
+                  if (columns[i].heading !== '') html = html + '<th>' + columns[i].heading + '</th>'; 
+                }
+                html = html + '</tr></thead>';
+                html = html + '<tbody>';
+                for (i = 0; i < table.content.length; i++) {
+                  row = table.content[i];
+                  html = html + '<tr>';
+                  for (colNo = 0; colNo < columns.length; colNo++) {
+                    html = html + '<td>' + row[columns[colNo].id] + '</td>';
+                  }
+                  html = html + '</tr>';
+                }
+                html = html + '</tbody>';
+                tableTag.innerHTML = html;
+              } 
+              if (typeof EWD.application.onReplacedTables === "function") { // invoke onReplaceTables() after tables are built
+                EWD.application.onReplacedTables();
+              }
             }
           }
         }
-        return;
-      }
-      if (typeof EWD.token !== 'undefined' && typeof EWD.sockets.handlerFunction[obj.type] !== 'undefined') {
-        EWD.sockets.handlerFunction[obj.type](obj);
-        obj = null;
-        return;
-      }
-      if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[obj.type]) {
-        EWD.application.onMessage[obj.type](obj);
-        obj = null;
-        return;
-      }
-      if (EWD.onSocketMessage) {
-        EWD.onSocketMessage(obj);
-        obj = null;
-        return;
-      }
-    });
-    io = null;
+        if (obj.type.indexOf('EWD.form.') !== -1) {
+          if (obj.error) {
+            var alertTitle = 'Form Error';
+            if (obj.alertTitle) alertTitle = obj.alertTitle;
+            if (EWD.application.framework === 'extjs') {
+              Ext.Msg.alert(alertTitle, obj.error);
+            }
+            else if (EWD.application.framework === 'bootstrap') {
+              if (typeof toastr !== 'undefined') {
+                toastr.clear();
+                toastr.error(obj.error);
+              }
+              else {
+                if (EWD.sockets.log) console.log("error = " + obj.error);
+                $('#' + EWD.application.popover.buttonId).popover('show');
+                $('#' + EWD.application.popover.container).find('div.popover-content').html(obj.error);
+              }
+            }
+            else {
+              alert(obj.error);
+            }
+            return;
+          }
+          else {
+            if (EWD.application.framework === 'bootstrap') {
+              $('#loginBtn').popover('hide');
+            }
+          }
+        }
+        if (obj.type.indexOf('EWD.error') !== -1) {
+          if (obj.error) {
+            if (EWD.trace) console.log(obj.error);
+          }
+          return;
+        }
+        // SJT New additions for jQuery selector support for fragment target
+        if (obj.type === 'EWD.getFragment') {
+          EWD.getFragmentResponseHandler(obj);
+          return;
+        }
+        if (obj.type.indexOf('EWD.inject') !== -1) {
+          if (obj.js) {
+            if (EWD.trace) console.log(obj.js);
+            try {
+              eval(obj.js);
+              if (obj.fn) eval(obj.fn);
+            }
+            catch(error) {
+              if (EWD.trace) {
+                console.log('EWD.inject failed:');
+                console.log(error);
+              }
+            }
+          }
+          return;
+        }
+        if (typeof EWD.token !== 'undefined' && typeof EWD.sockets.handlerFunction[obj.type] !== 'undefined') {
+          EWD.sockets.handlerFunction[obj.type](obj);
+          obj = null;
+          return;
+        }
+        if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[obj.type]) {
+          EWD.application.onMessage[obj.type](obj);
+          obj = null;
+          return;
+        }
+        if (EWD.onSocketMessage) {
+          EWD.onSocketMessage(obj);
+          obj = null;
+          return;
+        }
+      });
+      io = null;
+    }
   }
 };
 

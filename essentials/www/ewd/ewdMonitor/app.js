@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-Build 15: 06 August 2015
+Build 16: 18 November 2015
 
 */
 
@@ -696,6 +696,15 @@ EWD.application = {
             targetId: 'loginPanel'
           }
         });
+      }
+    });
+
+    EWD.sockets.sendMessage({
+      type: 'checkForUpdates',
+      done: function(messageObj) {
+        if (messageObj.message.update) {
+          toastr.warning('A new version of EWD.js is available: Build ' + messageObj.message.update);
+        }
       }
     });
 
