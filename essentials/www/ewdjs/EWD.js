@@ -28,8 +28,8 @@
 
 var EWD = {
   version: {
-    build: 26,
-    date: '17 November 2015'
+    build: 27,
+    date: '23 November 2015'
   }, 
   trace: false,
   initialised: false,
@@ -135,8 +135,15 @@ var EWD = {
       EWD.application.onMessage[data.type](data);
     }
   },
+  onReRegistered: function(obj, socket) {
+    console.log('Application was successfully re-registered');
+    if (typeof toastr !== 'undefined') {
+      toastr.warning('Application re-registered successfully');
+    }
+  },
   onRegistered: function(obj, socket) {
-    console.log('**** application = ' + EWD.application.name);
+    //console.log('onRegistered: obj = ' + JSON.stringify(obj));
+    //console.log('**** application = ' + EWD.application.name);
     if (EWD.application.name !== 'ewdMonitor' && obj.messageTransport) EWD.messageTransport = obj.messageTransport;
     //changed
     // handle service path
@@ -203,7 +210,7 @@ var EWD = {
             }
           }
           else {
-            if (io.connected) {
+            if (io && io.connected) {
               io.json.send(JSON.stringify(params)); 
             }
             else {
@@ -564,7 +571,7 @@ var EWD = {
       EWD.messageTransport = 'ajax';
       var params = {
         type: 'EWD.register',
-        clientId: EWD.guid(),
+        //clientId: EWD.guid(),
         application: EWD.application,
       };
       EWD.ajax(params);
@@ -574,7 +581,7 @@ var EWD = {
       var socket = io.connect();
       socket.on('disconnect', function() {
         if (EWD.sockets.log) console.log('socket.io disconnected');
-        if (EWD.application.onMessage.error) {
+        if (EWD.application.onMessage && EWD.application.onMessage.error) {
           EWD.application.onMessage.error({
             type: 'error',
             messageType: 'EWD.socket.disconnected',
@@ -594,12 +601,28 @@ var EWD = {
         }
         if (EWD.application) {
           if (socket && obj.type === 'EWD.connected') {
-            var json = {
-              type: 'EWD.register', 
-              application: EWD.application
-            };
-            socket.json.send(JSON.stringify(json));
-            return;
+            if (!EWD.application.name) {
+              // connection made to previously registered application
+              //  EWD.js may have been restarted and session may still be
+              //  active, so try a re-register
+              if (EWD.sockets.sendMessage) {
+                EWD.sockets.sendMessage({
+                  type: 'EWD.reregister'
+                });
+              }
+              else {
+                // Browser can't be re-registered
+                return;
+              }
+            }
+            else {
+              var json = {
+                type: 'EWD.register', 
+                application: EWD.application
+              };
+              socket.json.send(JSON.stringify(json));
+              return;
+            }
           }
         }
         else {
@@ -608,6 +631,10 @@ var EWD = {
         }
         if (obj.type === 'EWD.registered') {
           EWD.onRegistered(obj, socket);
+          return;
+        }
+        if (obj.type === 'EWD.reregistered') {
+          EWD.onReRegistered(obj, socket);
           return;
         }
 
