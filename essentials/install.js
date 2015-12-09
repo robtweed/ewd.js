@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
- Build 4: 3 March 2015
+ Build 5: 09 December 2015
 
 */
 
@@ -274,7 +274,7 @@ process.chdir('../..');
 console.log(' ');
 
 interface.question('Install EWD.js to directory path (' + process.cwd() + '): ', function(installPath) {
-  if (installPath === '') installPath = process.cwd();
+  if (installPath === '' || installPath === 'Y' || installPath === 'y') installPath = process.cwd();
   if (installPath.slice(-1) === '/') installPath = installPath.slice(0,-1);
   installEWD(installPath);
   console.log('  ');
