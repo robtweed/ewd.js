@@ -12,10 +12,16 @@ Google Group for discussions, support, advice etc: [http://groups.google.co.uk/g
 
 ## Acknowledgements
 
-Many thanks to Christopher Edwards (christopher.edwards@krminc.com) for his work on Node Inspector
+Many thanks to:
+   Christopher Edwards (christopher.edwards@krminc.com) for his work on Node Inspector
 integration which has been adapted and included in EWD.js (build 67 and later).
 
-Thanks also to Ward De Backer for numerous functional additions
+   Ward De Backer for numerous functional additions
+
+   Mike Clayton for the original design of the UpStart files, and for 
+help identifying many bugs over the years!
+
+   David Wicksell for his ongoing work on the NodeM interface for GT.M
 
 ## Installing EWD.js
 
