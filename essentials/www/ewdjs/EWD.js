@@ -28,9 +28,9 @@
 
 var EWD = {
   version: {
-    build: 27,
-    date: '23 November 2015'
-  }, 
+    build: 28,
+    date: '26 November 2015'
+  },
   trace: false,
   initialised: false,
   messageTransport: 'websockets',
@@ -151,7 +151,7 @@ var EWD = {
     // user require config obj.servicepath
     // SJT Addition for setting up require.js service path 
 
-    if (typeof require === 'function') {
+    if (!EWD.client && typeof require === 'function') {
       // add tailing / to path if necessary
       if (obj.servicePath.slice(-1) !== '/') obj.servicePath += '/';
       require.config({
@@ -548,7 +548,8 @@ var EWD = {
       }
     }
   },
-  start: function() {
+  start: function(iox, url) {
+    if (!iox && typeof io !== 'undefined') iox = io;
     if (EWD.application && EWD.application.chromecast) {
       EWD.application.parentOrigin = 'https://ec2.mgateway.com:8080';
       window.addEventListener('message', function(e) {
@@ -565,7 +566,8 @@ var EWD = {
         window.parent.postMessage(message, EWD.application.parentOrigin);
       }
     }
-    if (typeof io === 'undefined') {
+    var socket;
+    if (typeof iox === 'undefined') {
       // EWD.js running over Ajax only!
 
       EWD.messageTransport = 'ajax';
@@ -578,7 +580,12 @@ var EWD = {
 
     }
     else {
-      var socket = io.connect();
+      if (url) {
+        socket = iox(url);
+      }
+      else {
+        socket = iox.connect();
+      }
       socket.on('disconnect', function() {
         if (EWD.sockets.log) console.log('socket.io disconnected');
         if (EWD.application.onMessage && EWD.application.onMessage.error) {
@@ -769,13 +776,18 @@ var EWD = {
           return;
         }
       });
-      io = null;
+      if (typeof io !== 'undefined') io = null;
+      if (iox) iox = null;
     }
   }
 };
+
 
 if (typeof $ !== 'undefined' && !EWD.customStart ) {
   $(document).ready( function() {
     EWD.start();
   });
 }
+
+//EWD.client = true;
+//module.exports = EWD;

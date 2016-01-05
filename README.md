@@ -4,7 +4,7 @@ Node.js-based Application Framework and Application Server/Container for use wit
 MongoDB databases
 
 Rob Tweed <rtweed@mgateway.com>  
-9 May 2014, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
+9 May 2014, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)
 
 Twitter: @rtweed
 
@@ -148,7 +148,7 @@ see: [http://gradvs1.mgateway.com/download/EWDjs.pdf]
 
 ## License
 
- Copyright (c) 2013-15 M/Gateway Developments Ltd,                           
+ Copyright (c) 2013-16 M/Gateway Developments Ltd,
  Reigate, Surrey UK.                                                      
  All rights reserved.                                                     
                                                                            
