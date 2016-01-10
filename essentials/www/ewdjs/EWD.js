@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | EWD.js: Browser-side main logic for EWD.js Applications                  |
  |                                                                          |
- | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
+ | Copyright (c) 2013-16 M/Gateway Developments Ltd,                        |
  | Reigate, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
@@ -28,8 +28,8 @@
 
 var EWD = {
   version: {
-    build: 28,
-    date: '26 November 2015'
+    build: 29,
+    date: '08 January 2016'
   },
   trace: false,
   initialised: false,
@@ -783,9 +783,9 @@ var EWD = {
 };
 
 
-if (typeof $ !== 'undefined' && !EWD.customStart ) {
+if (typeof $ !== 'undefined') {
   $(document).ready( function() {
-    EWD.start();
+    if (!EWD.customStart) EWD.start();
   });
 }
 

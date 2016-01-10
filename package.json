@@ -1,7 +1,7 @@
 {
   "name": "ewdjs",
   "description": "EWD.js: Node.js-based Application Framework",
-  "version": "0.110.3",
+  "version": "0.110.4",
   "author": {
     "name": "Rob Tweed",
     "email": "rtweed@mgateway.com"
