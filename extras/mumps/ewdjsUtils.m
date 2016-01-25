@@ -2,7 +2,7 @@ ewdjsUtils ; EWD.js Utility methods, functions and tests
  ;
  ; ----------------------------------------------------------------------------
  ; | EWD.js                                                                   |
- ; | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
+ ; | Copyright (c) 2013-16 M/Gateway Developments Ltd,                        |
  ; | Reigate, Surrey UK.                                                      |
  ; | All rights reserved.                                                     |
  ; |                                                                          |
@@ -22,7 +22,7 @@ ewdjsUtils ; EWD.js Utility methods, functions and tests
  ; |  limitations under the License.                                          |
  ; ----------------------------------------------------------------------------
  ;
- ; Build 2: 19 August 2015
+ ; Build 4: 24 January 2016
  ;
  ;QUIT
  ;
@@ -264,7 +264,7 @@ restoreSymbolTable(gloRef) ;
  ; gloRef is of form "^gloName(""sub1"",""sub2"")"
  ; gloRef must specify at least one subscript
  ;
- k
+ k (gloRef)
  i $zv["GT.M" d  QUIT 1
  . n %zzx,%zzz
  . s gloRef=$e(gloRef,1,$l(gloRef)-1)
@@ -275,4 +275,13 @@ restoreSymbolTable(gloRef) ;
  . . i %zzz'="" m @%zzz=^(%zzz)
  ;
  QUIT $zu(160,0,gloRef)
+ ;
+getSessionSymbolTable(sessid) ;
+ ;
+ n gloRef
+ ;
+ s gloRef="^%zewdSession(""session"","_sessid_",""ewd_symbolTable"")"
+ i $$restoreSymbolTable(gloRef)
+ k %zzg
+ QUIT "ok"
  ;
