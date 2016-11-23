@@ -21,16 +21,16 @@
     "node": ">=0.2.2"
   },
   "dependencies": {
-    "socket.io": ">=0.9.6",
-    "globalsjs": ">=0.20.0",
-    "fast-url-parser": ">=1.0.6-0",
-    "mime": ">=1.2.11",
     "ewdliteclient": ">=0.4.0",
-    "node-uuid": ">=1.4.2",
-    "ntp-client": ">=0.5.3",
-    "speakeasy": ">=1.0.3",
+    "fast-url-parser": ">=1.0.6-0",
+    "globalsjs": ">=0.20.0",
     "graceful-fs": ">=3.0.5",
-    "request": ">=2.65.0"
+    "mime": ">=1.2.11",
+    "ntp-client": ">=0.5.3",
+    "request": ">=2.65.0",
+    "socket.io": ">=0.9.6",
+    "speakeasy": ">=1.0.3",
+    "uuid": "^3.0.0"
   },
   "licenses": [
     "Apache"
