@@ -1,6 +1,6 @@
 # Deprecation Notice
 
-**This repository has been deprecated.  You should now use [QEWD][https://github.com/robtweed/qewd] instead.**
+**This repository has been deprecated.  You should now use [QEWD](https://github.com/robtweed/qewd) instead.**
 
 **This repository has been left here for reference for anyone interested in viewing its logic etc.  Some links in the documentation here and elsewhere may no longer work.  Please contact the author if you require further information.**
 
