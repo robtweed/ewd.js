@@ -1,10 +1,20 @@
+# Deprecation Notice
+
+**This repository has been deprecated.  You should now use [QEWD][https://github.com/robtweed/qewd] instead.**
+
+**This repository has been left here for reference for anyone interested in viewing its logic etc.  Some links in the documentation here and elsewhere may no longer work.  Please contact the author if you require further information.**
+
+----
+
 # EWD.js
- 
+
 Node.js-based Application Framework and Application Server/Container for use with Cach&#233;, GlobalsDB, GT.M and 
 MongoDB databases
 
 Rob Tweed <rtweed@mgateway.com>  
-9 May 2014, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)
+9 May 2014  
+
+Copyright: MGateway Ltd [https://www.mgateway.com](https://www.mgateway.com)
 
 Twitter: @rtweed
 
@@ -148,11 +158,11 @@ see: [http://gradvs1.mgateway.com/download/EWDjs.pdf]
 
 ## License
 
- Copyright (c) 2013-16 M/Gateway Developments Ltd,
- Reigate, Surrey UK.                                                      
+ Copyright (c) 2023 MGateway Ltd,
+ Redhill, Surrey UK.                                                      
  All rights reserved.                                                     
                                                                            
-  http://www.mgateway.com                                                  
+  https://www.mgateway.com                                                  
   Email: rtweed@mgateway.com                                               
                                                                            
                                                                            

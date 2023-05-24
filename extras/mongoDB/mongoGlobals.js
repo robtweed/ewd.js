@@ -264,7 +264,7 @@ module.exports = {
     };
 
     this.about = function() {
-      return 'MongoDB Adaptor for Node.js (M/Gateway Developments Ltd)';
+      return 'MongoDB Adaptor for Node.js (MGateway Ltd)';
     };
 
     this.open = function(mongoObj, params) {

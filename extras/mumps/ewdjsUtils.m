@@ -2,11 +2,11 @@ ewdjsUtils ; EWD.js Utility methods, functions and tests
  ;
  ; ----------------------------------------------------------------------------
  ; | EWD.js                                                                   |
- ; | Copyright (c) 2013-16 M/Gateway Developments Ltd,                        |
- ; | Reigate, Surrey UK.                                                      |
+ ; | Copyright (c) 2023 MGateway Ltd,                                         |
+ ; | Redhill, Surrey UK.                                                      |
  ; | All rights reserved.                                                     |
  ; |                                                                          |
- ; | http://www.mgateway.com                                                  |
+ ; | https://www.mgateway.com                                                 |
  ; | Email: rtweed@mgateway.com                                               |
  ; |                                                                          |
  ; | Licensed under the Apache License, Version 2.0 (the "License");          |

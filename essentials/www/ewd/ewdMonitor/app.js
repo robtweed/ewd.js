@@ -3,11 +3,11 @@
  ----------------------------------------------------------------------------
  | ewdMonitor: EWD.js Monitor Application                                   |
  |                                                                          |
- | Copyright (c) 2013-15 M/Gateway Developments Ltd,                        |
- | Reigate, Surrey UK.                                                      |
+ | Copyright (c) 2023 MGateway Ltd,                                         |
+ | Redhill, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
- | http://www.mgateway.com                                                  |
+ | https://www.mgateway.com                                                 |
  | Email: rtweed@mgateway.com                                               |
  |                                                                          |
  |                                                                          |

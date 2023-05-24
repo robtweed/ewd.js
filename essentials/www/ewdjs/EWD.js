@@ -3,11 +3,11 @@
  ----------------------------------------------------------------------------
  | EWD.js: Browser-side main logic for EWD.js Applications                  |
  |                                                                          |
- | Copyright (c) 2013-16 M/Gateway Developments Ltd,                        |
- | Reigate, Surrey UK.                                                      |
+ | Copyright (c) 2023 MGateway Ltd,                                         |
+ | Redhill, Surrey UK.                                                      |
  | All rights reserved.                                                     |
  |                                                                          |
- | http://www.mgateway.com                                                  |
+ | https://www.mgateway.com                                                 |
  | Email: rtweed@mgateway.com                                               |
  |                                                                          |
  |                                                                          |
@@ -28,9 +28,9 @@
 
 var EWD = {
   version: {
-    build: 29,
-    date: '08 January 2016'
-  },
+    build: 28,
+    date: '12 February 2016'
+  }, 
   trace: false,
   initialised: false,
   messageTransport: 'websockets',
@@ -133,6 +133,11 @@ var EWD = {
     // invoke the message handler function for returned type
     if (EWD.application && EWD.application.onMessage && EWD.application.onMessage[data.type]) {
       EWD.application.onMessage[data.type](data);
+      return;
+    }
+    if (EWD.sockets && EWD.sockets.events[data.type]) {
+      EWD.sockets.emit(data.type, data);
+      return;
     }
   },
   onReRegistered: function(obj, socket) {
@@ -151,7 +156,7 @@ var EWD = {
     // user require config obj.servicepath
     // SJT Addition for setting up require.js service path 
 
-    if (!EWD.client && typeof require === 'function') {
+    if (typeof require === 'function') {
       // add tailing / to path if necessary
       if (obj.servicePath.slice(-1) !== '/') obj.servicePath += '/';
       require.config({
@@ -548,8 +553,7 @@ var EWD = {
       }
     }
   },
-  start: function(iox, url) {
-    if (!iox && typeof io !== 'undefined') iox = io;
+  start: function() {
     if (EWD.application && EWD.application.chromecast) {
       EWD.application.parentOrigin = 'https://ec2.mgateway.com:8080';
       window.addEventListener('message', function(e) {
@@ -566,8 +570,7 @@ var EWD = {
         window.parent.postMessage(message, EWD.application.parentOrigin);
       }
     }
-    var socket;
-    if (typeof iox === 'undefined') {
+    if (typeof io === 'undefined') {
       // EWD.js running over Ajax only!
 
       EWD.messageTransport = 'ajax';
@@ -580,12 +583,7 @@ var EWD = {
 
     }
     else {
-      if (url) {
-        socket = iox(url);
-      }
-      else {
-        socket = iox.connect();
-      }
+      var socket = io.connect();
       socket.on('disconnect', function() {
         if (EWD.sockets.log) console.log('socket.io disconnected');
         if (EWD.application.onMessage && EWD.application.onMessage.error) {
@@ -776,18 +774,13 @@ var EWD = {
           return;
         }
       });
-      if (typeof io !== 'undefined') io = null;
-      if (iox) iox = null;
+      io = null;
     }
   }
 };
 
-
-if (typeof $ !== 'undefined') {
+if (typeof $ !== 'undefined' && !EWD.customStart ) {
   $(document).ready( function() {
-    if (!EWD.customStart) EWD.start();
+    EWD.start();
   });
 }
-
-//EWD.client = true;
-//module.exports = EWD;
